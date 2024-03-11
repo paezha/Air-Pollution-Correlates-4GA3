@@ -1,5 +1,5 @@
 ---
-title: "The Effects of Education and Income on Opioid Use in Kentucky"
+title: "Some Random Title Here"
 #subtitle: "A subtitle"
 thanks: "Paper submitted to complete the requirements of ENVSOCTY 4GA3 Applied Spatial Statistics; with additional edits by Antonio Paez for this version."
 author:
