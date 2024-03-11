@@ -16,7 +16,7 @@ author:
 - name: Oliver
   student_number: 
 subject: "ENVSOCTY 4GA3"
-abstract: "abstract goes here"
+abstract: "abstract goes here; some extra spiel added here"
 keywords: "opioids, education, income, spatial analysis"
 date: "4/6/2020"
 output:
