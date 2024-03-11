@@ -1,12 +1,12 @@
 ---
-title: "The Effects of Education and Income on Opioid Use in Kentucky"
+title: "Some Random Title Here"
 #subtitle: "A subtitle"
 thanks: "Paper submitted to complete the requirements of ENVSOCTY 4GA3 Applied Spatial Statistics; with additional edits by Antonio Paez for this version."
 author:
 - name: Farah Chin
   student_number: 400229991
-- name: Talat  
-  student_number: 
+- name: Talat Hakim
+  student_number: 400315290
 - name: Nathan
   student_number: 
 - name: Cindia
@@ -15,10 +15,8 @@ author:
   student_number: 
 - name: Oliver
   student_number: 
-- name: Antonio Paez
-  student_number: My number
 subject: "ENVSOCTY 4GA3"
-abstract: "This paper reports our analysis of opioid prescriptions in Kentucky, USA, and its relationship with income and education at the level of counties. Data were obtained from the Washington Post database and the US Census."
+abstract: "abstract goes here"
 keywords: "opioids, education, income, spatial analysis"
 date: "4/6/2020"
 output:
