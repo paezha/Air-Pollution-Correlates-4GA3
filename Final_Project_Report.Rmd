@@ -5,8 +5,8 @@ thanks: "Paper submitted to complete the requirements of ENVSOCTY 4GA3 Applied S
 author:
 - name: Farah Chin
   student_number: 400229991
-- name: Talat  
-  student_number: 
+- name: Talat Hakim
+  student_number: 400315290
 - name: Nathan
   student_number: 
 - name: Cindia
