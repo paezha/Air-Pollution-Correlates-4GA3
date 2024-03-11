@@ -1,0 +1,529 @@
+---
+title: "The Effects of Education and Income on Opioid Use in Kentucky"
+#subtitle: "A subtitle"
+thanks: "Paper submitted to complete the requirements of ENVSOCTY 4GA3 Applied Spatial Statistics; with additional edits by Antonio Paez for this version."
+author:
+- name: Zahra Akhtar
+  student_number: 400067162
+- name: Anastasiia Kalinina 
+  student_number: 400050085
+- name: Gabriella Morrone
+  student_number: 400085415
+- name: Jillian Walters
+  student_number: 400285085
+- name: Jocelyn Wu
+  student_number: 400051160
+subject: "ENVSOCTY 4GA3"
+abstract: "This paper reports our analysis of opioid prescriptions in Kentucky, USA, and its relationship with income and education at the level of counties. Data were obtained from the Washington Post database and the US Census."
+keywords: "opioids, education, income, spatial analysis"
+date: "4/6/2020"
+output:
+  pdf_document:
+    # The project-template-default.tex file was minimally adapted from Steven V. Miller's template for academic manuscripts. See:
+    # http://svmiller.com/blog/2016/02/svm-r-markdown-manuscript/
+    # https://github.com/svmiller/svm-r-markdown-templates/blob/master/svm-latex-ms.tex
+    template: project-template-default.tex
+bibliography: [bibliography.bib, packages.bib]
+always_allow_html: true
+---
+
+<!--Chunks of code can have names; the chunk option "include" controls whether the chunk and its output are printed in the final document-->
+```{r load-packages, include=FALSE}
+# devtools::install_github('wpinvestigative/arcos') # Install if needed, but this needs to be done only once
+library(arcos) # the `arcos` allows us to download Prescription data prepared by the Washington Post
+library(cartogram) # Package to create cartograms
+library(readxl) # package to read external data, like csv and text files
+library(sf) # package for working with geospatial data in simple features format
+library(sp) # package for working with spatial data, including utilities to create spatial weights matrices, etc.
+library(spdep) # package for spatial regression analysis
+library(stargazer) # package for creating tables with output of models 
+library(tidyverse) # family of packages for data manipulation, analysis, and visualization (includes `ggplot2`)
+library(tigris) # package `tigris` which includes boundary and other geography files for the US:
+library(plotly) # package for interactive plotting
+library(viridis) #Viridis colour scheme for mapping
+```
+
+```{r write-package-bib, include=FALSE}
+# This function is used to write a bibliography for the `R` packages used in the paper
+knitr::write_bib(file = 'packages.bib')
+```
+
+```{r read-census-data, include=FALSE}
+income_fip <- read_excel("data/income.fip.xlsx")
+education_ky <- read_excel("data/education_ky.xlsx")
+```
+
+<!--This create a page break, i.e., starts a new page-->
+<!--\newpage-->
+
+<!-- 
+To cite references in your bibliography.bib file, use [@item] if you want it to be cited in brackets, or @item if you want it to be cited as Name (year). If you want to cite various items in brackets, separate them with semicolons [@item1; @item2]
+-->
+
+<!--Use "#" for section headers-->
+# Introduction
+
+Opioid use has increased over the years, particularly with the introduction of the drugs by the pharmaceutical industry as painkiller prescriptions [@dennis2015opioid]. In the United States alone, opioid prescriptions are responsible for tens of thousands of opioid-related drug deaths [@nida2020opioid]. There have been many attempts to solve this growing issue, however, without properly addressing the problem, it cannot be resolved. For instance, one barrier in the way of addressing opioid use in the United States is the state of Kentucky which has the highest opioid use in the country. To understand why, this paper will analyze the spatial statistics of opioid use in Kentucky. The purpose of this study is to address the following research question: Is there any causal relationship between education and income and opioid usage across counties in the state of Kentucky in the United States? To answer this, the opioid use data for Kentucky will go through a series of area data processes in relation to socioeconomic factors, education and income. An analysis of the processes will be done to determine the effect of these factors on opioid use in Kentucky. The trends from this will define opioid use in Kentucky and further discussion on the topic.
+
+# Background
+
+Drug overdose is one of the leading causes of accidental death; causing 65,000 deaths in the United States in 2016 [@jones2018opioid]. The United States is currently experiencing a lethal health crisis of drug use, specifically, opioid overdose and opioid use disorder/misuse [@national2017pain]. The use of opioids causes feelings of euphoria and is most widely used for pain relief. Using opioids (including prescription use) can increase tolerance to the drug effect, as well as physical dependency such as withdrawal symptoms [@van1999opioids]. According to the WHO (2018), opioids can cause substance reliance that is described by a powerful urge to take opioids, and steady opioid use despite destructive consequences, respiratory depression, and behaviours. Opioids are separated into prescription pain relievers such as oxycodone and hydrocodone, and illicit substances including heroin. According to @jones2018opioid, Americans are responsible for 80 percent of the world’s oxycodone and 90 percent of the world’s hydrocodone consumption. On average, 90 Americans die each day prematurely from an overdose that involves an opioid [@national2017pain]. The biggest increase in drug overdose deaths occurred between 2015 and 2016, involving synthetic opioids, and most significantly, fentanyl [@scholl2019drug]. From 2018 to 2019, The Washington Post (2020) reported on fentanyl, which killed more than 30,000 people that year. If current trends continue, the yearly death toll from fentanyl will converge to the yearly toll from traffic and gun accidents (The Washington Post, 2020).
+
+In 2011, Kentucky was flooded with 371 million doses of opioid painkillers forcing state officials to crack down on pain clinics, suing pharmaceutical companies and limiting the number of pills doctors are able to prescribe [@beam2018kentucky]. Such measures lead to almost 100 million fewer opioid prescriptions in 2017, however, to an 11.5 percent increase in drug overdose deaths [@beam2018kentucky]. According to the Kentucky Injury Prevention and Research Center (2012), deaths from drug-overdose in Kentucky increased 282 percent between 2000 and 2010, from a rate of six overdose deaths per 100,000 residents to 22.9 deaths per 100,000 residents.
+
+In 2006, Kentucky had the third-highest rate of prescription opioids in the US, but over the course of the decade, those numbers have dropped [@kennedy2020cdc]. Kentucky, however, is still one of the top ten states with the highest prescription rates [@nida2019kentucky]. 
+
+Many recent studies have been researching the socioeconomic factors contributing to the rates of opioid use worldwide. For instance, disability, pension, unemployment, divorce, low income and low education are associated with persistent opioid use, based on a Norwegian study from 2005 [@svendsen2014persistent].
+
+According to @altekruse2020socioeconomic, people whose highest level of education was a High School Diploma or GED accounted to 35.4 percent of deaths related to opioid overdose, while 23.7 percent of opioid overdose deaths were of people who did not complete high school. Over the years the number of deaths due to opioid overdose had increased for people with less than a four-year college degree in comparison to those with graduate degrees (Altekruse et al., 2020). Such an increase in the risk of opioid misuse among people with lower education may partially reflect downstream consequences such as less access to stable employment opportunities [@altekruse2020socioeconomic]. In another study, @irp2018opioid suggests that less-educated individuals may have greater risk factors and fewer disincentives for engaging in drug use as opposed to more educated individuals. This implies that less-educated individuals face poor job prospects, declining or flat earnings, and greater risk of workplace injuries, chronic health conditions and disability, which in a lot of cases lead to opioid prescriptions  [@irp2018opioid]. According to @smolina2016determinants, the rapid increase in opioid consumption (by 31 percent) in British Columbia was found to be the greatest among lower-income individuals compared to higher-income individuals, from 2005 to 2013.
+
+# Study area
+
+Opioid use was studied at the county level in the state of Kentucky (see Figure \ref{fig:counties-ky}). There are 120 counties in the state of Kentucky, and 119 of these had opioid data available for analysis. Kentucky was chosen as it is one of the states with the highest reported opioid usage and opioid-involved overdose deaths. In 2017, the United States national average of opioid-related deaths was a rate of 14.6 deaths per 100,000 people, and Kentucky had a rate of 27.9 deaths per 100,000 people (National Institute on Drug Abuse, 2019). The state also had a high amount of variation between counties and the number of pills per person as reported by the Washington Post - ranging between around 20 to 185 pills per person per year. The study was done to analyze if there are any spatial patterns shown by these variations and to uncover possible reasons behind these spatial patterns. 
+
+```{r retrieve-arcos-data, include=FALSE}
+# Using the `arcos` package we can view summarized annual data from the Washington Post, as well as the population of each county. 
+KY_sum <- arcos::summarized_county_annual(state = "KY", 
+                                          key = "WaPo")
+```
+
+```{r retrieve-population, include=FALSE}
+# We will use this data to map the opioid data for Kentucky.
+# First we will adjust for population. Selecting the columns important to us.
+population <- arcos::county_population(state = "KY", 
+                                       key = "WaPo") %>%
+  select(countyfips, 
+         year, 
+         population)
+```
+
+```{r retrieve-geography, include=FALSE}
+# Download the county geography for Kentucky as a simple features object
+options(tigris_class = "sf")
+KY_shape <- tigris::counties(state = "KY", 
+                             cb = T)
+```
+
+<!--Chunk option eval controls whether a chunk is evaluated when the document is executed; set to false to avoid running. It can still be manually run-->
+```{r check-sf, eval=FALSE, include=FALSE}
+#Check the simple features file:
+KY_shape
+# We see that the coordinates of this are in lon-lat.
+```
+
+```{r join-opioid-data-to-geography, include=FALSE}
+# Join the county dosage data with the county shapefile.
+KY <- KY_sum %>% 
+  left_join(KY_shape, 
+            by = c("countyfips" = "GEOID"))
+```
+
+```{r join-population-dosage-tables, include=FALSE}
+# Join the population and dosage tables, divide by population. This gives dosage per capita.
+KY <- KY %>%
+  left_join(population) %>%
+  mutate(per_person = DOSAGE_UNIT/population) %>%
+  st_as_sf()
+```
+
+<!--Chunk option echo controls whether the code is displayed in the output. The results of the chunk are displayed.
+Chunk option fig.cap is used to give the figure a caption; we can add a label that we can refer to in the text as \ref{fig:counties-ky}, and then the figures will be automatically numbered.-->
+```{r plot-dosage, echo=FALSE, fig.cap={"\\label{fig:counties-ky}Counties in Kentucky, USA"}}
+ggplot() +
+  geom_sf(data = KY_shape,
+          color = "white", 
+          fill = "gray") + 
+  theme_void()+
+  theme(panel.grid.major = element_line(colour = 'transparent'))
+```
+
+# Data
+
+The data used for this study ranges over a nine-year period between 2006 to 2014. It includes opioid use data from this period of time. This data was retrieved from The Washington Post using the `arcos` package in RStudio [@rich2019how]). The variables of this study are retrieved from the 2010 and 2014 census data for Kentucky from the United States Census Bureau. The data used from the 2010 census included the mean yearly household income (United States Census Bureau, n.d.-a). The 2014 census was used to retrieve the level of education (high school degree and above) (United States Census Bureau, n.d.-b).
+
+# Methods
+
+This study uses RStudio to conduct a series of data processes to visualize and find relationships between pre-selected variables for Kentucky, USA. The independent variable used in this study is the opioid use data for Kentucky based on pills per person, per county. The different variables used are the income and education levels per county in Kentucky. This study conducts area data processes including choropleth maps to emphasize important trends and patterns in the data, scatterplots, and regression analyses to determine relationships between opioid use data and the variables.
+
+# Results
+
+To begin this research study, data was collected in order to create a general understanding of the trends. This includes the history of opioid use in Kentucky. Figure \ref{fig:annual-dosage} shows the general pattern of opioid use across counties in Kentucky, depicting pills per person, from 2006 to 2014. 
+
+```{r plot-annual-dosage, echo=FALSE, fig.cap={"\\label{fig:annual-dosage}Annual opioid pills per person by county in Kentucky, USA (2006-2014)"}}
+ggplot() +
+  geom_sf(data = KY, 
+          aes(fill = per_person, 
+              color = per_person)) + 
+  scale_fill_viridis(direction = -1, option = "B")+
+  scale_color_viridis(direction = -1, option ="B") +
+  #coord_sf(crs = 26915) + This crs is NAD83 UTM zone 15N - not really needed for plotting here but projecting the data may be required later
+  theme_void()+
+  theme(panel.grid.major = element_line(colour = 'transparent')) +
+  labs(caption="Source: The Washington Post, ARCOS") +
+  facet_wrap (~ year, ncol =2)
+```
+
+Similar to Figure \ref{fig:annual-dosage}, a nine-year average showing opioid use, of pills per person, for each county can be made (see Figure \ref{fig:mean-annual-dosage}). This provides a clearer distinction of changes in each county over the years in a single map, rather than several maps.
+
+```{r calculate-annual-mean-dosage, include=FALSE}
+KY_AVG_Per <- KY %>% 
+  st_drop_geometry() %>%
+  group_by(COUNTYFP) %>% # Group by county
+  summarize(DOSAGE_UNIT = mean(DOSAGE_UNIT), # calculate the 9 year average `DOSAGE_UNIT` for every county
+            per_person = mean(per_person)) %>% # calculate the 9 year average `per_person` for every county
+  left_join(KY_shape, by = "COUNTYFP") %>% # join to the sf object
+  st_as_sf() # convert to sf
+```
+
+```{r map-mean-per-person-dose, echo=FALSE, fig.cap={"\\label{fig:mean-annual-dosage}Mean annual opioid pills per person by county in Kentucky, USA (9-year average, 2006-2014)"}}
+#Map the average dosage unit per person per year from 2006-2014.
+ggplot() +
+  geom_sf(data = KY_AVG_Per, 
+          aes(fill = per_person),
+          color = "white") + 
+  scale_fill_viridis(direction = -1, 
+                     option = "B", 
+                     name="Pills per capita") +
+  theme_void()+
+  theme(panel.grid.major = element_line(colour = 'transparent')) +
+  labs(caption="Source: The Washington Post, ARCOS") 
+```
+
+Figure \ref{fig:cartogram-mean-annual-dosage} is a cartogram showing regions with high usage of opioids. This cartogram emphasizes the highest changes in purchases in pills in each county over the selected nine years.
+```{r create-cartogram, include=FALSE}
+KY_per_person_cartogram <- KY_AVG_Per %>%
+  st_transform(crs = 26916) %>%
+  cartogram_cont(weight = "per_person")
+```
+
+```{r map-per-person-dose-cartogram, echo=FALSE, fig.cap={"\\label{fig:cartogram-mean-annual-dosage}Cartogram of mean annual opioid pills per person by county in Kentucky, USA (9-year average, 2006-2014)"}}
+ggplot(KY_per_person_cartogram, aes(fill = per_person)) +
+  geom_sf(color = "white") + 
+  scale_fill_viridis(direction = -1, option = "B", name="Pills per Person")+
+  theme_void() +
+  theme(panel.grid.major = element_line(colour = 'transparent')) +
+  labs(caption="Source: The Washington Post, ARCOS")
+```
+
+Next, a series of maps were created; five choropleth maps with simulated spatial moving averages and a sixth with the empirical spatial moving averages. Figure \ref{fig:simulated-landscapes} is the original landscape of the average dosage unit per person compared to the five null landscapes.
+```{r create-contiguities-object, include=FALSE}
+# Create listw object
+KY_Pills.w <- KY_AVG_Per %>% 
+  as("Spatial") %>% 
+  poly2nb() %>%
+  nb2listw()
+```
+
+```{r calculate-spatial-moving-averages, include=FALSE}
+# Observed data
+KY_AVG_Per <- KY_AVG_Per %>%
+  mutate(sma = lag.listw(KY_Pills.w, per_person))
+
+# Null landscape/simulation #1
+simulation_1 <- sample(KY_AVG_Per$per_person)
+# Calculate spatial moving average
+simulation_1.sma <- lag.listw(KY_Pills.w, simulation_1)
+# Null landscape/simulation #2
+simulation_2 <- sample(KY_AVG_Per$per_person)
+simulation_2.sma <- lag.listw(KY_Pills.w, simulation_2)
+
+# Null landscape/simulation #3
+simulation_3 <- sample(KY_AVG_Per$per_person)
+simulation_3.sma <- lag.listw(KY_Pills.w, simulation_3)
+
+# Null landscape/simulation #4
+simulation_4 <- sample(KY_AVG_Per$per_person)
+simulation_4.sma <- lag.listw(KY_Pills.w, simulation_4)
+
+# Null landscape/simulation #5
+simulation_5 <- sample(KY_AVG_Per$per_person)
+simulation_5.sma <- lag.listw(KY_Pills.w, simulation_5)
+```
+
+```{r add-simulated-landscapes, include=FALSE}
+#Add simulated landscapes to sf dataframe
+KY_AVG_Per$simulation_1 <- simulation_1
+KY_AVG_Per$simulation_2 <- simulation_2
+KY_AVG_Per$simulation_3 <- simulation_3
+KY_AVG_Per$simulation_4 <- simulation_4
+KY_AVG_Per$simulation_5 <- simulation_5
+
+#Add spatial moving averages to sf dataframe
+KY_AVG_Per$simulation_1.sma <- simulation_1.sma
+KY_AVG_Per$simulation_2.sma <- simulation_2.sma
+KY_AVG_Per$simulation_3.sma <- simulation_3.sma
+KY_AVG_Per$simulation_4.sma <- simulation_4.sma
+KY_AVG_Per$simulation_5.sma <- simulation_5.sma
+```
+
+```{r gather-simulated-landscapes, include=FALSE}
+#Create a new dataframe to compare original landscape to null landscapes
+KY_AVG2 <- KY_AVG_Per %>% 
+  # `transmute()` keeps only the spatial moving averages and geometry
+  transmute(observed = per_person, 
+         simulation_1,
+         simulation_2,
+         simulation_3,
+         simulation_4,
+         simulation_5,
+         geometry) %>% 
+  # `pivot_longer()` places all variables with the exception of `geometry` in a single column named `SMA` and creates a new variable called `VAR` with the names of the original columns (i.e., observed, simulation_1,...)
+  pivot_longer(cols = -c(geometry, ends_with("sma")), names_to = "VAR", values_to = "values") %>%
+  st_as_sf()
+```
+
+```{r map-simulated-landscapes, echo=FALSE, fig.cap={"\\label{fig:simulated-landscapes}Maps showing the empirical distribution of mean annual opioid pills per person and five simulated landscapes"}}
+ggplot() + 
+  geom_sf(data = KY_AVG2, 
+          aes(fill = values), color = NA) + 
+  facet_wrap(~VAR, ncol = 3) +
+  scale_fill_viridis(direction = -1, option = "B")+
+  labs(fill = "Pills per SMA") + 
+  theme(axis.text.x = element_blank(), 
+        axis.text.y = element_blank())
+```
+
+By plotting the data of the spatial moving averages in Figure \ref{fig:simulated-landscapes}, the data can be further analyzed. The plots of the empirical and simulated spatial moving averages are shown in Figure \ref{fig:scatterplot-moving-averages}.
+
+```{r gather-moving-averages-2, echo=FALSE}
+KY_AVG2 <- KY_AVG2 %>% 
+  data.frame(KY_AVG_Per %>% 
+               st_drop_geometry() %>% # Drop the geometry because it is already available 
+               # Select the original population density and the 5 null landscapes simulated from it.
+               transmute(sma,
+                      simulation_1.sma,
+                      simulation_2.sma,
+                      simulation_3.sma,
+                      simulation_4.sma,
+                      simulation_5.sma,
+               ) %>% # Pass the result to `pivot_longer()`  
+               pivot_longer(cols = everything(), names_to = "VAR", values_to = "SMA") %>% # Copy all density variables to a single column, and create a new variable called `VAR` with the names of the original columns 
+               select(SMA)) # Drop VAR from the the dataframe
+```
+
+
+```{r spatial-moving-averages, echo=FALSE, fig.cap={"\\label{fig:scatterplot-moving-averages}Moran's scatterplots of empirical and simulated spatial moving averages of mean annual opioid pills per person"}}
+ggplot(data = KY_AVG2, 
+       aes(x = values, 
+           y = SMA,
+           color = VAR)) +
+  geom_point(alpha = 0.1) +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed") +
+  # Add a fitted line to the plots
+  geom_smooth(formula = y ~ x,
+              method = "lm") +
+  coord_equal() +
+  xlab("Pills per person") +
+  ylab("Spatial lag of pills per person") +
+  facet_wrap(~ VAR, ncol = 3)
+```
+
+```{r include=FALSE}
+KY_AVG_Per <- KY_AVG_Per %>% 
+  # Modify values in dataframe
+  mutate(Rate_z = per_person - mean(per_person), # Substract the mean, so that the variable now is deviations from the mean 
+         SMA_z = lag.listw(KY_Pills.w, Rate_z)) # Calculate the spatial moving average of the newly created variable `Density_z`
+```
+
+```{r moran-test, include=FALSE}
+mc <- moran.test(KY_AVG_Per$per_person, KY_Pills.w)
+```
+
+<!--We can include inline calculations in the text by using r code as shown in the paragraph below-->
+To further explore and understand the opioid use data, the spatial autocorrelation can be calculated. Figure \ref{fig:moran-scatterplot} is a Moran's scatterplot of the observed number of pills per person. The standardized value of the Moran's I statistic is `r round(mc$statistic, 4)` and the corresponding $p$-value is `r ifelse(mc$p.value >= 0.0001, round(mc.pvalue, 4), "<0.0001")`. The null hypothesis is spatial independence. Since the $p$-value is a small number, we can reject the null hypothesis with a high degree of confidence.
+
+```{r moran-scatterplot, echo=FALSE, fig.cap={"\\label{fig:moran-scatterplot}Moran's scatterplot of empirical variable (observed)"}}
+# Confirming the results from the Moran coefficient above. We use "moran.plot" to illustrate the SMA of rate by county
+mp <- moran.plot(KY_AVG_Per$per_person, 
+                 KY_Pills.w,
+                 xlab = "Pills per person",
+                 ylab = "Spatial lag of pills per person")
+```
+
+Figure \ref{fig:lisa} is a plot of the local indicators of spatial association (LISA), that is the local version of Moran's I. As seen in Moran's scatterplot (Figure \ref{fig:moran-scatterplot}), a county can have high levels of pills per capita (higher than the global mean), and be surrounded by counties that on average have high levels of pills per capita. This combination is termed "High-High". Another possibility is that a county has low levels of pills per capita (below the global mean), and the neighboring counties have also on average low levels of pills per capita. This combination is termed "Low-Low". The other two combinations are "High-Low" and "Low-High". Calculating the LISA allows us to categorize counties into one of these classes. Further, if we map these statistics we can visualize concentrations of high or low values, or transition zones. This type of map also makes it easy to visualize where a statistic is significant or not. It allows for easy analysis to detect _hot spots_, regions with high levels of pills per capita, or cold spots, regions with low levels of pills per capita. In Figure \ref{fig:lisa}, the statistic that can either be significant or not.
+
+```{r lisa, include=FALSE}
+Per_person.lm <- localmoran(KY_AVG_Per$per_person, KY_Pills.w)
+summary(Per_person.lm)
+```
+
+```{r join-lisa-to-data, echo=FALSE}
+KY_AVG_Per <- left_join(KY_AVG_Per, 
+                        data.frame(GEOID = KY_AVG_Per$GEOID, 
+                                   Per_person.lm), 
+                        by = c("GEOID"))
+KY_AVG_Per <- rename(KY_AVG_Per, p.val = Pr.z...0.)
+```
+
+```{r lisa-map, echo = FALSE, fig.cap={"\\label{fig:lisa}Map of local statistics of spatial association, used to detect hot and cold spots"}}
+# Now it is possible to map the local statistics:
+#plot_ly(KY_AVG_Per) %>%
+#  add_sf(split = ~(p.val < 0.05), color = ~Type, colors = c("red", "khaki1", "dodgerblue", "dodgerblue4")) 
+KY_AVG_Per %>%
+  mutate(significance = p.val <= 0.05,
+         Type = case_when((Rate_z >= 0 & SMA_z >= 0) & significance == TRUE ~ "HH significant",
+                          (Rate_z >= 0 & SMA_z >= 0) & significance == FALSE ~ "HH not significant",
+                          (Rate_z < 0 & SMA_z < 0) & significance == TRUE ~ "LL significant",
+                          (Rate_z < 0 & SMA_z < 0) & significance == FALSE ~ "LL not significant",
+                          (Rate_z * SMA_z < 0) & significance == TRUE ~ "HL/LH significant",
+                          (Rate_z * SMA_z < 0) & significance == FALSE ~ "HL/LH not significant"),
+         Type = factor(Type,
+                       levels = c("HH significant",
+                                  "HH not significant",
+                                  "HL/LH significant",
+                                  "HL/LH not significant",
+                                  "LL significant",
+                                  "LL not significant"))) %>%
+  ggplot() +
+  geom_sf(aes(fill = Type),
+          color = "gray80") + 
+  scale_fill_manual(values = c("HH significant" = "red", 
+                               "HH not significant" = "rosybrown1",
+                               "LL significant" = "dodgerblue",
+                               "LL not significant" = "lightblue",
+                               "HL/LH significant" = "gray",
+                               "HL/LH not significant" = "white")) +
+  theme_void() +
+  theme(panel.grid.major = element_line(colour = 'transparent'))
+```
+
+Figure \ref{fig:household-income} represents the mean annual household income in the counties in Kentucky. The darker the regions, the higher the yearly income. This map shows the general trend for income (2010) which is one of the variables that is used to analyze opioid usage in Kentucky.
+
+```{r join-income-data, echo=FALSE}
+income_fip <- income_fip %>%  
+  rename(income = Mean) %>%
+  mutate(GEOID = as.character(GEOID))
+KY_AVG_Per <- KY_AVG_Per %>% 
+  left_join(income_fip,
+            by=("GEOID"))
+```
+
+```{r map-household-income, echo=FALSE, fig.cap={"\\label{fig:household-income}Mean annual household income in 2010"}}
+ggplot() +
+  geom_sf(data = KY_AVG_Per, 
+          aes(fill = income/10000),
+          color = "white") + 
+  scale_fill_viridis(direction = -1, 
+                     option = "B",
+                     name = "Mean household income ($10,000)") +
+  theme_void() +
+  theme(panel.grid.major = element_line(colour = 'transparent'),
+        legend.position = "bottom") +
+  labs(caption="Source: US Census Bureau")
+```
+
+The second variable that is analyzed with opioid usage is education. Figure \ref{fig:education} displays the percent of the population in each county who received a high school diploma by 2014. This data will also be compared to the opioid use of Kentucky.
+
+```{r join-education-data, echo=FALSE}
+education_ky <- education_ky %>%  
+  mutate(GEOID = as.character(GEOID))
+
+KY_AVG_Per <- KY_AVG_Per %>%
+  left_join(education_ky, 
+            by=("GEOID"))
+```
+
+```{r map-education-data, echo=FALSE, fig.cap={"\\label{fig:education}Educational attainment in Kentucky: percent of population with high school degree or higher (2014)"}}
+ggplot() +
+  geom_sf(data = KY_AVG_Per,
+          aes(fill = HSDeg),
+          color = "white") +
+  scale_fill_viridis(direction = -1, 
+                     option = "B",
+                     name = "% of population") +
+  theme_void() + 
+  theme(panel.grid.major = element_line(colour = 'transparent'),
+        legend.position = "bottom") +
+  labs(caption="Source: US Census Bureau")
+```
+
+To determine relationships between opioid use and the chosen variables, they must be regressed to the opioid use data. Figure 12 shows the average household income per county in Kentucky regressed to the number of opioid pills per person. Figure 13 shows the percent of the population per county that has obtained a high school degree regressed to the number of opioid pills per person.
+```{r echo=FALSE}
+#income_fip <- income_fip %>%  
+#    mutate(GEOID = as.character(GEOID))
+#KY_AVG_Per <- left_join(KY_AVG_Per, income_fip, by=("GEOID"))
+```
+
+\newpage
+
+```{r model-income, echo=FALSE, message=FALSE, results="asis"}
+# Use `lm()` to estimate a linear regression model
+model1 <- lm(formula = per_person ~ income, 
+             data = KY_AVG_Per)
+
+# Use stargazer to print table with results of model
+stargazer(model1,
+          header = FALSE,
+          title = "Mean annual opioid pills per person regressed on mean household income")
+```
+
+```{r plot-model-income, echo = FALSE, fig.cap={"\\label{fig:model-income}Regression analysis of income and mean annual opioid pills per person"}}
+ggplot(data = KY_AVG_Per, 
+       aes(x = income, 
+           y = per_person))+
+  geom_point() +
+  geom_smooth(formula = y ~ x,
+              method = "lm") +
+  xlab("Mean annual household income") +
+  ylab("Pills per person")
+```
+
+\newpage
+
+```{r model-education, echo=FALSE, message=FALSE, results="asis"}
+# Use `lm()` to estimate a linear regression model
+model2 <- lm(formula = per_person ~ HSDeg,
+             data = KY_AVG_Per)
+
+# Use stargazer to print table with results of model
+stargazer(model2,
+          header = FALSE,
+          title = "Mean annual opioid pills per person regressed on proportion of population with high school degree or higher")
+```
+
+```{r plot-model-education, echo=FALSE, fig.cap={"\\label{fig:model-education}Regression analysis of educational attainement and mean annual opioid pills per person"}}
+ggplot(data = KY_AVG_Per, 
+       aes(x = HSDeg, 
+           y = per_person))+
+  geom_point() +
+  geom_smooth(formula = y ~ x,
+              method = "lm") +
+  xlab("% population highschool or above") +
+  ylab("Pills per person") 
+```
+
+\newpage
+
+These figures have been created to visualize and to show trends that might not be seen otherwise. General maps, choropleth maps, scatterplots and regression analyses were conducted to understand and find relationships between the use of opioids and income and/or education levels.
+
+# Analysis
+
+In Figure \ref{fig:annual-dosage}, we notice that the number of opioid pills per capita in Kentucky grew in the period between 2006 and 2014, as the colours appear darker in 2014 when compared to 2006. Regions with higher consumption of opioid pills remain high over the years, corresponding to the darker coloured regions remaining the darkest over time, on the south east of the state. Figure \ref{fig:mean-annual-dosage} illustrates that in the places with the highest levels of pills per capita over this period of time, so many pills were distributed that every person, every child, woman, and man in the county received more than 150 pills per year on average (and in some years more than this!). This does not mean that every single person in those counties was consuming almost three pills per week. But it does give a sobering indication of the flood of opioids that some counties faced.
+
+From a spatial perspective, we are interested in learning whether the spatial pattern is random or not. Figure \ref{fig:simulated-landscapes} shows the distribution of the observed variable and five simulated (random) landscapes. It is clear from the figure that the map with the empirical variable is different from the simulated variables, suggesting that the average dosage unit per person is not random across the state. The highest average dosage units per person appear to be on the east side of Kentucky, followed by the west side and gradually decrease as we move towards the north-west. 
+
+One of the advantages of the spatial moving average is its use in the development of scatterplots. Figure \ref{fig:scatterplot-moving-averages} represents the difference between the empirical and simulated variables along with the fitted regression line. In the figure, the slope of the line tends to be flat in the simulated variables, which is to be expected as these variables are null landscapes, and therefore spatially random. The empirical variable, on the other hand, has a slope that is closer to the 45-degree line than any of the simulated variables, suggesting that the values of the variable are not independent of their local mean, i.e., the probability of a non-random pattern is high. 
+
+Figure \ref{fig:moran-scatterplot} repeats Moran's scatterplot of the average dosage unit per person per year from 2006 to 2014. The $p$-value of the Moran’s I calculation is very low. The null hypothesis of the spatial autocorrelation test is of spatial independence, and with a low $p$-value, this hypothesis can be rejected with a high degree of confidence. It is highly likely that there is a spatial pattern of opioid use in Kentucky. Some observations in the plot are highlighted, which means that they can be identified as “influential” since they make a particularly large contribution to decomposing Moran’s I. The relative contribution of each observation to the calculation of Moran’s I is informative by itself, and its analysis can provide more focused information about the spatial pattern. To understand the spatial pattern better, we calculate local statistics, which describe autocorrelation for a location of interest, as well as the contribution of that location to the global statistic. 
+
+Figure \ref{fig:lisa} shows whether the average dosage unit per person in a zone is low, surrounded by zones that also have a low average dosage unit per person (LL) or high, surrounded by other zones with high average dosage units per person (HH). Other zones have either low average dosage units per person and are surrounded by zones with high average dosage units per person, or vice-versa (HL or LH). Therefore, it can be seen that there are significant hotspots of opioid distribution in the south and east of Kentucky, as well as a smaller cold spot in the north part of the state.
+
+Having detected a spatial pattern, the next question was whether the pattern related to socio-economic or demographic attributes of the counties. We were particularly interested in the correlation between income and education and the distribution of opioids in Kentucky.
+
+Figure \ref{fig:household-income} clearly shows that the highest income per household is mostly concentrated in the northern part of the state, where opioid distribution tended to be lower. Moving towards the east side the income seems to be gradually decreasing. This trend can be explained by the fact that educational attainment, shown in Figure \ref{fig:education}, is higher for the western counties and similar to the yearly income per household trend, for the most part, it decreases moving to the bottom, right area of the state. 
+
+Figure \ref{fig:model-income} depicts a regression analysis of income. It shows a relationship between income and the number of pills per person. Even though there remains a fair amount of noise, represented by the dots around the regression line, the regression line captures the general trend of the data. Based on the plot, it can be seen that the counties with higher income per household seem to have lower numbers of pills per person.
+
+Likewise, Figure \ref{fig:model-education}, which depicts a regression analysis of education, shows a relationship between the percentage of high-school-degree or above and pills per person. Here, the regression model appears to have less noise in comparison to the model of the regression analysis of income. The relationship between the variables, however, appears to have a similar trade to one of income. For example, the counties with a higher percentage of people with high school degrees and/or higher education seem to have slightly lower numbers of pills per person.
+
+When comparing Figure \ref{fig:mean-annual-dosage}, which is the mean annual opioid distribution in Kentucky between 2006-2014 and Figure \ref{fig:model-income}, the mean yearly income Kentucky in 2010, the trend is that the lower the income, the higher the opioid use. There is a strong correlation between the two factors, income and opioid use. The highest opioid use in Kentucky in 2010, is located in the south-east counties, represented in the darkest colour (see \ref{fig:mean-annual-dosage}) and they correspond to lighter colours in \ref{fig:model-income}, where they are countries of lower mean yearly income. Thus, it can be determined that the lower the income, the higher the opioid use. 
+
+When comparing Figure \ref{fig:mean-annual-dosage}, which is the mean annual opioid distribution in Kentucky between 2006-2014 and Figure \ref{fig:model-education}, which is the educational attainment in Kentucky in 2014, there is a weaker correlation between the factors as the majority of the population in Kentucky has a high school degree or above, making it harder to depict a pattern. The entire Kentucky region excluding the south-east counties has at least 80 percent of the population with high school degrees or above. Still, based on the data,  the lower the education level, the higher the opioid use. This trend is weaker because in the south-west region there is a high education level, but also a somewhat high opioid use. 
+
+# Conclusion
+
+Through the data processing methods used, patterns of spatial autocorrelation with opioid drug use in counties in Kentucky were revealed. This was shown by the low $p$-value in the Moran’s I test. A general pattern was found using the local Moran’s I statistic where counties in the north-west had a low number of pills per person surrounded by other counties with low opioid usage. In the south-east, there was a cluster of high opioid usage surrounded by counties with high opioid usage. Regression analysis determined that counties with a higher mean yearly income having lower opioid usage.  It also revealed that there is a higher percentage of people with high school degrees and/or higher educational attainment correlates with a slightly lower number of pills per person in that county.  
+
+Having conducted the series of data analysis, it can be concluded that there is a causal relationship between education and income and opioid usage whereby increased education and income can result in less opioid usage and resulting consequences. However, it is recommended that further studies be conducted to confirm these trends with a high degree of accuracy. In addition, these studies could focus on the comparison between various states within the United States to further assess how states compare and where more resources should be allocated.
+
+# References
