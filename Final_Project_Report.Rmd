@@ -43,5 +43,11 @@ Words
 
 Words
 
+# Results and discussion
+
+<!-- I think it would be a good idea to have a section with the discussion of the findings -->
+
+Here we will discuss the results of the analysis.
+
 # References
 
