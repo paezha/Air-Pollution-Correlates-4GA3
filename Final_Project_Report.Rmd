@@ -34,7 +34,7 @@ always_allow_html: true
 Words go here
 
 More text for introduction
-Add more words
+Add more words. For a review of land use regression models see @hoek2008review.
 
 # Data
 
