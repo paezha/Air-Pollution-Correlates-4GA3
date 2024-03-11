@@ -1,0 +1,45 @@
+---
+title: "The Effects of Education and Income on Opioid Use in Kentucky"
+#subtitle: "A subtitle"
+thanks: "Paper submitted to complete the requirements of ENVSOCTY 4GA3 Applied Spatial Statistics; with additional edits by Antonio Paez for this version."
+author:
+- name: Farah Chin
+  student_number: 400229991
+- name: Talat  
+  student_number: 
+- name: Nathan
+  student_number: 
+- name: Cindia
+  student_number:
+- name: Ifra
+  student_number: 
+- name: Oliver
+  student_number: 
+subject: "ENVSOCTY 4GA3"
+abstract: "This paper reports our analysis of opioid prescriptions in Kentucky, USA, and its relationship with income and education at the level of counties. Data were obtained from the Washington Post database and the US Census."
+keywords: "opioids, education, income, spatial analysis"
+date: "4/6/2020"
+output:
+  pdf_document:
+    # The project-template-default.tex file was minimally adapted from Steven V. Miller's template for academic manuscripts. See:
+    # http://svmiller.com/blog/2016/02/svm-r-markdown-manuscript/
+    # https://github.com/svmiller/svm-r-markdown-templates/blob/master/svm-latex-ms.tex
+    template: project-template-default.tex
+bibliography: [bibliography.bib, packages.bib]
+always_allow_html: true
+---
+
+# Introduction
+
+Words go here
+
+# Data
+
+Words
+
+# Methods
+
+Words
+
+# References
+
