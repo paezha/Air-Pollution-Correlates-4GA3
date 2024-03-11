@@ -33,6 +33,9 @@ always_allow_html: true
 
 Words go here
 
+More text for introduction
+Add more words
+
 # Data
 
 Words
@@ -40,6 +43,12 @@ Words
 # Methods
 
 Words
+
+# Results and discussion
+
+<!-- I think it would be a good idea to have a section with the discussion of the findings -->
+
+Here we will discuss the results of the analysis.
 
 # References
 
