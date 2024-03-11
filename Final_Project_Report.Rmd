@@ -42,7 +42,7 @@ Words
 
 # Methods
 
-Words
+Describing some methods.
 
 # Results and discussion
 
