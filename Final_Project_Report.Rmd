@@ -15,6 +15,8 @@ author:
   student_number: 
 - name: Oliver
   student_number: 
+- name: Antonio Paez
+  student_number: My number
 subject: "ENVSOCTY 4GA3"
 abstract: "This paper reports our analysis of opioid prescriptions in Kentucky, USA, and its relationship with income and education at the level of counties. Data were obtained from the Washington Post database and the US Census."
 keywords: "opioids, education, income, spatial analysis"
