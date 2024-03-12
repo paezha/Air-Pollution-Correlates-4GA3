@@ -9,8 +9,8 @@ author:
   student_number: 400315290
 - name: Nathan
   student_number: 
-- name: Cindia
-  student_number:
+- name: Cindia Dao-Vu
+  student_number: 400319161
 - name: Ifra
   student_number: 
 - name: Oliver
