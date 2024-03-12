@@ -11,8 +11,8 @@ author:
   student_number: 
 - name: Cindia Dao-Vu
   student_number: 400319161
-- name: Ifra
-  student_number: 
+- name: Ifra Awan
+  student_number:400261667 
 - name: Oliver
   student_number: 
 subject: "ENVSOCTY 4GA3"
