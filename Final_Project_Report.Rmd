@@ -7,8 +7,8 @@ author:
   student_number: 400229991
 - name: Talat Hakim
   student_number: 400315290
-- name: Nathan
-  student_number: 
+- name: Nathan Nadeau
+  student_number: 400342430
 - name: Cindia Dao-Vu
   student_number: 400319161
 - name: Ifra Awan
