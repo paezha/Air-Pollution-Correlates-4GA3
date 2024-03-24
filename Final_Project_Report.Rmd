@@ -38,6 +38,19 @@ Add more words. For a review of land use regression models see @hoek2008review.
 
 # Data
 
+```{r}
+# Load the air quality data
+
+library(readxl)
+ 
+Air_Quality_Data=read_excel('data/Air_Quality_Data.xlsx')
+
+Air_Quality_Data
+```
+```{r}
+summary(Air_Quality_Data)
+```
+
 Words
 
 # Methods
