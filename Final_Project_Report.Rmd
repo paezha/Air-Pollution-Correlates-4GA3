@@ -43,12 +43,12 @@ Add more words. For a review of land use regression models see @hoek2008review.
 
 library(readxl)
  
-Air_Quality_Data=read_excel('data/Air_Quality_Data.xlsx')
+AQ_data=read_excel('data/Air_Quality_Data.xlsx')
 
-Air_Quality_Data
+AQ_data
 ```
 ```{r}
-summary(Air_Quality_Data)
+summary(AQ_data)
 ```
 
 Words
