@@ -1,0 +1,8 @@
+2021 Census Profiles Files / Profile of Census Disseminations Areas
+COL0 - GEO UID
+COL1 - DA name
+COL2 - Journey to Work - Total Sex / Total - Main mode of commuting for the employed labour force aged 15 years and over with a usual place of work or no fixed workplace address - 25% sample data ; Both sexes / Car, truck or van ; Both sexes
+COL3 - Journey to Work - Total Sex / Total - Main mode of commuting for the employed labour force aged 15 years and over with a usual place of work or no fixed workplace address - 25% sample data ; Both sexes / Public transit ; Both sexes
+COL4 - Journey to Work - Total Sex / Total - Main mode of commuting for the employed labour force aged 15 years and over with a usual place of work or no fixed workplace address - 25% sample data ; Both sexes / Bicycle ; Both sexes
+COL5 - Journey to Work - Total Sex / Total - Main mode of commuting for the employed labour force aged 15 years and over with a usual place of work or no fixed workplace address - 25% sample data ; Both sexes / Walked ; Both sexes
+COL6 - Journey to Work - Total Sex / Total - Main mode of commuting for the employed labour force aged 15 years and over with a usual place of work or no fixed workplace address - 25% sample data ; Both sexes / Other method ; Both sexes

@@ -1,0 +1,12 @@
+2021 Census Profiles Files / Profile of Census Disseminations Areas
+COL0 - GEO UID
+COL1 - DA name
+COL2 - Dwelling characteristics / Total - Occupied private dwellings by structural type of dwelling - 100% data / Single-detached house
+COL3 - Dwelling characteristics / Total - Occupied private dwellings by structural type of dwelling - 100% data / Semi-detached house
+COL4 - Dwelling characteristics / Total - Occupied private dwellings by structural type of dwelling - 100% data / Row house
+COL5 - Dwelling characteristics / Total - Occupied private dwellings by structural type of dwelling - 100% data / Apartment or flat in a duplex
+COL6 - Dwelling characteristics / Total - Occupied private dwellings by structural type of dwelling - 100% data / Apartment in a building that has fewer than five storeys
+COL7 - Dwelling characteristics / Total - Occupied private dwellings by structural type of dwelling - 100% data / Apartment in a building that has five or more storeys
+COL8 - Dwelling characteristics / Total - Occupied private dwellings by structural type of dwelling - 100% data / Other single-attached house
+COL9 - Dwelling characteristics / Total - Occupied private dwellings by structural type of dwelling - 100% data / Movable dwelling
+COL10 - Dwelling characteristics / Total - Occupied private dwellings by structural type of dwelling - 100% data
