@@ -63,6 +63,7 @@ AQ_data=read_excel('data/Air_Quality_Data.xlsx')
 
 AQ_data
 ```
+
 ```{r}
 summary(AQ_data)
 ```
@@ -76,7 +77,6 @@ AQ_plot <- ggplot(data = AQ_data,
 
 AQ_plot
 ```
-
 
 Words
 
