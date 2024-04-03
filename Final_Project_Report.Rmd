@@ -36,6 +36,10 @@ Words go here
 More text for introduction
 Add more words. For a review of land use regression models see @hoek2008review.
 
+```{r}
+rm(list = ls())
+```
+
 # Data
 
 ```{r}
