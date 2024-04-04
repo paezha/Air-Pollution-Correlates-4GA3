@@ -51,6 +51,8 @@ library(plotly) # Create Interactive Web Graphics via 'plotly.js'
 #library(spatstat.explore) # Exploratory Data Analysis for the 'spatstat' Family
 library(spdep) # Spatial Dependence: Weighting Schemes, Statistics
 library(tidyverse) # Easily Install and Load the 'Tidyverse'
+library(sf)
+library(cancensus) #retrieve Canadian Census Data
 ```
 
 
@@ -104,6 +106,12 @@ ggplot(AQ_data.v) +
   geom_sf(aes(fill = PM25Avg)) +
   scale_fill_distiller(palette = "OrRd", 
                        direction = 1)
+```
+## Toronto Census Data 
+
+```{r}
+TorontoCTs.path <- "data/TorontoCTs.shp"
+TorontoCTs.sf <- st_read(TorontoCTs.path)
 ```
 
 Words
