@@ -109,10 +109,21 @@ ggplot(AQ_data.v) +
 ```
 ## Toronto Census Data 
 
+Go to https://mountainmath.github.io/cancensus/index.html and follow instructions for setting up CensusMapping account and generating API key to retrieve data.
+
+More info: https://mountainmath.github.io/cancensus/articles/cancensus.html
+
 ```{r}
-TorontoCTs.path <- "data/TorontoCTs.shp"
-TorontoCTs.sf <- st_read(TorontoCTs.path)
+# regions available for 2016 census
+list_census_regions("CA21")
+
+#Toronto: CMA
 ```
+
+```{r}
+
+```
+
 
 Words
 
