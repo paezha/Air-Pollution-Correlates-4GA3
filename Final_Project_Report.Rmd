@@ -53,6 +53,7 @@ library(spdep) # Spatial Dependence: Weighting Schemes, Statistics
 library(tidyverse) # Easily Install and Load the 'Tidyverse'
 library(sf)
 library(cancensus) #retrieve Canadian Census Data
+library(geojsonsf)
 ```
 
 
@@ -119,9 +120,16 @@ list_census_regions("CA21")
 
 #Toronto: CMA
 ```
+Set your cache to the data folder:
+```{r}
+cancensus::set_cancensus_cache_path(paste0(getwd(), "/data"),install = TRUE, overwrite = TRUE)
+```
 
 ```{r}
+census_data <- get_census(dataset='CA16', regions=list(CMA="59933"), 
+                          vectors=c("v_CA16_408","v_CA16_409","v_CA16_410"), level='CSD', geo_format = "sf")
 
+summary(census_data)
 ```
 
 
