@@ -56,6 +56,15 @@ library(cancensus) #retrieve Canadian Census Data
 library(geojsonsf)
 ```
 
+```{r}
+data("Toronto")
+```
+
+```{r}
+ggplot() +
+  geom_sf(data = Toronto, color = "black", fill = NA, alpha = 1, size = .3) +
+  coord_sf()
+```
 
 ```{r}
 # Load the air quality data
@@ -71,12 +80,17 @@ AQ_data
 summary(AQ_data)
 ```
 ```{r}
+ggplot() +
+  geom_sf(data = Toronto, color = "black", fill = NA, alpha = 1, size = .3) +
+  coord_sf()
+```
+
+```{r}
 AQ_plot <- ggplot(data = AQ_data, 
               aes (x = Lat, y = Lon, size = PM25Avg)) +
   geom_point(alpha = 0.5) + 
   scale_color_distiller(palette = "OrRd",
-                        direction = 1) +
-  coord_equal() 
+                        direction = 1)
 
 AQ_plot
 ```
@@ -131,7 +145,6 @@ census_data <- get_census(dataset='CA16', regions=list(CMA="59933"),
 
 summary(census_data)
 ```
-
 
 Words
 
