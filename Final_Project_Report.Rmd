@@ -87,7 +87,7 @@ ggplot() +
 
 ```{r}
 AQ_plot <- ggplot(data = AQ_data, 
-              aes (x = Lat, y = Lon, size = PM25Avg)) +
+              aes (x = Lon, y = Lat, size = PM25Avg)) +
   geom_point(alpha = 0.5) + 
   scale_color_distiller(palette = "OrRd",
                         direction = 1)
@@ -97,7 +97,7 @@ AQ_plot
 
 ```{r}
 AQ_data.sf <- AQ_data |> 
-  st_as_sf(coords = c("Lat", "Lon"))
+  st_as_sf(coords = c("Lon", "Lat"))
 ```
 
 ```{r}
