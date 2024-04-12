@@ -141,12 +141,15 @@ cancensus::set_cancensus_cache_path(paste0(getwd(), "/data"),install = TRUE, ove
 
 Getting median household income from cancensus:
 ```{r}
-toronto_income.sf <- get_census(dataset='CA21', regions=list(CMA="35535"),
-                         vectors=c("median_hh_income"="v_CA21_906"), level='CT', quiet = TRUE, 
+torontoCTs.demographics.sf <- get_census(dataset='CA21', regions=list(CMA="35535"),
+                         vectors=c("median_hh_income"="v_CA21_906",
+                                   "population_density" = "v_CA21_6"), 
+                         level='CT', quiet = TRUE, 
                          geo_format = 'sf', labels = 'short')
 
-summary(toronto_income.sf)
-ggplot(toronto_income.sf) + geom_sf(aes(fill = median_hh_income))
+#summary(torontoCTs.demographics.sf)
+ggplot(torontoCTs.demographics.sf) + geom_sf(aes(fill = median_hh_income)) + labs(fill = "Median Household Income")
+ggplot(torontoCTs.demographics.sf) + geom_sf(aes(fill = population_density)) + labs(fill = "Population density per square km")
 ```
 
 
