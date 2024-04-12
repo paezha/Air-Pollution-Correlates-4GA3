@@ -147,9 +147,24 @@ torontoCTs.demographics.sf <- get_census(dataset='CA21', regions=list(CMA="35535
                          level='CT', quiet = TRUE, 
                          geo_format = 'sf', labels = 'short')
 
+torontoDAs.demographics.sf <- get_census(dataset='CA21', regions=list(CMA="35535"),
+                         vectors=c("median_hh_income"="v_CA21_906",
+                                   "population_density" = "v_CA21_6"), 
+                         level='DA', quiet = TRUE, 
+                         geo_format = 'sf', labels = 'short')
+```
+
+Projecting:
+```{r}
+#st_transform(torontoDAs.demographics.sf)
+```
+
+
+```{r}
 #summary(torontoCTs.demographics.sf)
 ggplot(torontoCTs.demographics.sf) + geom_sf(aes(fill = median_hh_income)) + labs(fill = "Median Household Income")
 ggplot(torontoCTs.demographics.sf) + geom_sf(aes(fill = population_density)) + labs(fill = "Population density per square km")
+ggplot(torontoDAs.demographics.sf) + geom_sf(aes(fill = median_hh_income)) + labs(fill = "Median Household Income")
 ```
 
 
