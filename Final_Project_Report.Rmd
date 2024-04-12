@@ -139,17 +139,16 @@ Set your cache to the data folder:
 cancensus::set_cancensus_cache_path(paste0(getwd(), "/data"),install = TRUE, overwrite = TRUE)
 ```
 
+Getting median household income from cancensus:
 ```{r}
 toronto_income.sf <- get_census(dataset='CA21', regions=list(CMA="35535"),
                          vectors=c("median_hh_income"="v_CA21_906"), level='CT', quiet = TRUE, 
                          geo_format = 'sf', labels = 'short')
 
 summary(toronto_income.sf)
-ggplot(toronto_income.sf) + geom_sf()
+ggplot(toronto_income.sf) + geom_sf(aes(fill = median_hh_income))
 ```
-```{r}
 
-```
 
 =======
 >>>>>>> 1961d0d2742524a9f902b4c6b02647c83218166f
