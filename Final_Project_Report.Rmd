@@ -54,6 +54,8 @@ library(tidyverse) # Easily Install and Load the 'Tidyverse'
 library(sf)
 library(cancensus) #retrieve Canadian Census Data
 library(geojsonsf)
+library(gstat)
+library(stars)
 ```
 
 ```{r}
@@ -122,6 +124,39 @@ ggplot(AQ_data.v) +
   scale_fill_distiller(palette = "OrRd", 
                        direction = 1)
 ```
+
+```{r}
+# function to determine the mean and sd of the prediction variance obtained with different kriging parameters
+# observations: sf object containing the points to be interpolated (in this case the air pollution readings)
+# polynomial terms need to have already been calculated
+# targets: points that are being interpolated to (in this case the centroids)
+# vgm_model: model of theoretical variogram (string)
+# trend: what to use for the trend surface (can be Linear, Quadratic, Cubic, or None)
+krig_pred_var <- function(observations, targets, vgm_model, trend = "None"){
+  
+  if(trend == "Linear"){
+    trend_model <- V ~ X + Y
+  } else if (trend == "Quadratic") {
+    trend_model <- V ~ X2 + X + XY + Y + Y2
+  } else if (trend == "Cubic") {
+    trend_model <- V ~ X3 + X2Y + X2 + X + XY + Y + Y2 + XY2 + Y3
+  } else {
+    trend_model <- V ~ 1
+  }
+  
+  variogram_v <- variogram(trend_model, 
+                           data = observations)
+  
+  variogram_v.t <- fit.variogram(variogram_v, model = vgm(vgm_model))
+  
+  V.kriged <- krige(trend_model,
+                    observations, 
+                    targets, 
+                    variogram_v.t)
+  return(c("mean" = mean(V.kriged$var1.var), "sd" = sd(V.kriged$var1.var)))
+}
+```
+
 ## Toronto Census Data 
 
 Go to https://mountainmath.github.io/cancensus/index.html and follow instructions for setting up CensusMapping account and generating API key to retrieve data.
