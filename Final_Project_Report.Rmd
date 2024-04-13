@@ -45,7 +45,7 @@ rm(list = ls())
 ```{r}
 # Load libraries for interpolation (might not need all of them)
 library(deldir) # Delaunay Triangulation and Dirichlet (Voronoi) Tessellation
-library(isdas) # Companion Package for Book An Introduction to Spatial Data Analysis and Statistics
+#library(isdas) # Companion Package for Book An Introduction to Spatial Data Analysis and Statistics
 library(plotly) # Create Interactive Web Graphics via 'plotly.js'
 #library(spatstat) # Spatial Point Pattern Analysis, Model-Fitting, Simulation, Tests
 #library(spatstat.explore) # Exploratory Data Analysis for the 'spatstat' Family
@@ -141,12 +141,14 @@ cancensus::set_cancensus_cache_path(paste0(getwd(), "/data"),install = TRUE, ove
 
 Getting median household income from cancensus:
 ```{r}
+# census tract level 
 torontoCTs.demographics.sf <- get_census(dataset='CA21', regions=list(CMA="35535"),
                          vectors=c("median_hh_income"="v_CA21_906",
                                    "population_density" = "v_CA21_6"), 
                          level='CT', quiet = TRUE, 
                          geo_format = 'sf', labels = 'short')
 
+# dissemination area level
 torontoDAs.demographics.sf <- get_census(dataset='CA21', regions=list(CMA="35535"),
                          vectors=c("median_hh_income"="v_CA21_906",
                                    "population_density" = "v_CA21_6"), 
