@@ -67,9 +67,9 @@ AQ_data <- read_excel('data/Air_Quality_Data.xlsx')
 colnames(AQ_data)[2:4] <- c("Y", "X", "P")
 
 AQ_data <- mutate(AQ_data,
-                      X3 = X^3, X2Y = X^2 * Y, X2 = X^2,
-                      XY = X * Y,
-                      Y2 = Y^2, XY2 = X * Y^2, Y3 = Y^3)
+                  X3 = X^3, X2Y = X^2 * Y, X2 = X^2,
+                  XY = X * Y,
+                  Y2 = Y^2, XY2 = X * Y^2, Y3 = Y^3)
 ```
 
 ```{r}
@@ -78,7 +78,8 @@ summary(AQ_data)
 
 ```{r}
 AQ_data.sf <- AQ_data |> 
-  st_as_sf(coords = c("X", "Y"))
+  st_as_sf(coords = c("X", "Y"), 
+           remove = "FALSE") # Keep X and Y columns
 ```
 
 ```{r}
@@ -166,10 +167,22 @@ ggplot(torontoDAs.demographics.sf) + geom_sf() + geom_sf(data = AQ_data.sf, aes(
 # generating centroids
 torontoDAs.centroids <- st_centroid(torontoDAs.demographics.sf)
 ```
+
+```{r}
+# Extract coordinates as separate 'X' and 'Y' columns
+torontoDAs.centroids <- torontoDAs.centroids |>
+  mutate(X = unlist(map(torontoDAs.centroids$geometry, 1)), 
+         Y = unlist(map(torontoDAs.centroids$geometry, 2))) |>
+  # Add polynomials
+  mutate(X3 = X^3, X2Y = X^2 * Y, X2 = X^2,
+         XY = X * Y, 
+         Y2 = Y^2, XY2 = X * Y^2, Y3 = Y^3)
+```
+
 ```{r}
 #kriging
+kriging.output <- krig_pred_var(AQ_data.sf, torontoDAs.centroids, "Exp", "Cubic")
 
-kriging.output <- krig_pred_var(AQ_data.sf, torontoDAs.centroids, "Cubic", "Exp")
 ```
 
 =======
