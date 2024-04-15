@@ -207,6 +207,9 @@ ggplot(torontoCTs.demographics.sf) + geom_sf(aes(fill = population_density)) + l
 ggplot(torontoDAs.demographics.sf) + geom_sf(aes(fill = median_hh_income)) + labs(fill = "Median Household Income")
 ```
 
+```{r}
+ggplot(torontoDAs.demographics.sf) + geom_sf() + geom_sf(data = AQ_data.sf)
+```
 
 =======
 >>>>>>> 1961d0d2742524a9f902b4c6b02647c83218166f
