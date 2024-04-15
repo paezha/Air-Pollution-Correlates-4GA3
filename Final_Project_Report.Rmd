@@ -195,7 +195,8 @@ torontoDAs.demographics.sf <- get_census(dataset='CA21', regions=list(CMA="35535
 
 Projecting:
 ```{r}
-#st_transform(torontoDAs.demographics.sf)
+st_transform(torontoDAs.demographics.sf, 32617)
+st_crs(AQ_data.sf) <- st_crs(torontoDAs.demographics.sf)
 ```
 
 
