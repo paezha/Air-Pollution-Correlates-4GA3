@@ -71,11 +71,6 @@ AQ_data
 ```{r}
 summary(AQ_data)
 ```
-```{r}
-ggplot() +
-  geom_sf(data = Toronto, color = "black", fill = NA, alpha = 1, size = .3) +
-  coord_sf()
-```
 
 ```{r}
 AQ_plot <- ggplot(data = AQ_data, 
