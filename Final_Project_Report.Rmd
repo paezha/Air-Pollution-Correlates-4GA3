@@ -42,11 +42,11 @@ rm(list = ls())
 
 # Data
 
-```{r}
+```{r message = FALSE}
 # Load libraries for interpolation (might not need all of them)
 library(deldir) # Delaunay Triangulation and Dirichlet (Voronoi) Tessellation
 #library(isdas) # Companion Package for Book An Introduction to Spatial Data Analysis and Statistics
-library(plotly) # Create Interactive Web Graphics via 'plotly.js'
+#library(plotly) # Create Interactive Web Graphics via 'plotly.js'
 #library(spatstat) # Spatial Point Pattern Analysis, Model-Fitting, Simulation, Tests
 #library(spatstat.explore) # Exploratory Data Analysis for the 'spatstat' Family
 library(spdep) # Spatial Dependence: Weighting Schemes, Statistics
@@ -91,13 +91,13 @@ AQ_data.sf <- AQ_data |>
 krig_pred_var <- function(observations, targets, vgm_model, trend = "None"){
   
   if(trend == "Linear"){
-    trend_model <- V ~ X + Y
+    trend_model <- P ~ X + Y
   } else if (trend == "Quadratic") {
-    trend_model <- V ~ X2 + X + XY + Y + Y2
+    trend_model <- P ~ X2 + X + XY + Y + Y2
   } else if (trend == "Cubic") {
-    trend_model <- V ~ X3 + X2Y + X2 + X + XY + Y + Y2 + XY2 + Y3
+    trend_model <- P ~ X3 + X2Y + X2 + X + XY + Y + Y2 + XY2 + Y3
   } else {
-    trend_model <- V ~ 1
+    trend_model <- P ~ 1
   }
   
   variogram_v <- variogram(trend_model, 
@@ -115,18 +115,20 @@ krig_pred_var <- function(observations, targets, vgm_model, trend = "None"){
 }
 ```
 
+```{r}
+variogram_v <- variogram(P ~ 1, 
+                           data = AQ_data.sf)
+
+variogram_v.t <- fit.variogram(variogram_v, model = vgm("Exp", "Sph", "Gau"))
+```
+
+
 ## Toronto Census Data 
 
 Go to https://mountainmath.github.io/cancensus/index.html and follow instructions for setting up CensusMapping account and generating API key to retrieve data.
 
 More info: https://mountainmath.github.io/cancensus/articles/cancensus.html
 
-```{r}
-# regions available for 2016 census
-list_census_regions("CA21")
-
-#Toronto: CMA
-```
 Set your cache to the data folder:
 ```{r}
 cancensus::set_cancensus_cache_path(paste0(getwd(), "/data"),install = TRUE, overwrite = TRUE)
