@@ -176,8 +176,9 @@ Set your cache to the data folder:
 cancensus::set_cancensus_cache_path(paste0(getwd(), "/data"),install = TRUE, overwrite = TRUE)
 ```
 
-Getting median household income from cancensus:
+
 ```{r}
+#Getting median household income from cancensus:
 # census tract level 
 torontoCTs.demographics.sf <- get_census(dataset='CA21', regions=list(CMA="35535"),
                          vectors=c("median_hh_income"="v_CA21_906",
@@ -193,20 +194,20 @@ torontoDAs.demographics.sf <- get_census(dataset='CA21', regions=list(CMA="35535
                          geo_format = 'sf', labels = 'short')
 ```
 
-Projecting:
+
 ```{r}
+#Projecting:
 st_transform(torontoDAs.demographics.sf, 32617)
 st_crs(AQ_data.sf) <- st_crs(torontoDAs.demographics.sf)
 ```
 
-
 ```{r}
-#summary(torontoCTs.demographics.sf)
-ggplot(torontoCTs.demographics.sf) + geom_sf(aes(fill = median_hh_income)) + labs(fill = "Median Household Income")
-ggplot(torontoCTs.demographics.sf) + geom_sf(aes(fill = population_density)) + labs(fill = "Population density per square km")
-ggplot(torontoDAs.demographics.sf) + geom_sf(aes(fill = median_hh_income)) + labs(fill = "Median Household Income")
+ggplot(torontoDAs.demographics.sf) + geom_sf() + geom_sf(data = AQ_data.sf, aes(size = PM25Avg))
 ```
-
+```{r}
+# generating centroids
+torontoDAs.centroids <- st_centroid(torontoDAs.demographics.sf)
+```
 
 =======
 >>>>>>> 1961d0d2742524a9f902b4c6b02647c83218166f
