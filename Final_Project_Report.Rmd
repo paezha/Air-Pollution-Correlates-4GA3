@@ -56,6 +56,8 @@ library(cancensus) #retrieve Canadian Census Data
 library(geojsonsf)
 library(gstat)
 library(stars)
+library(readxl)
+
 ```
 
 ```{r}
@@ -70,8 +72,6 @@ ggplot() +
 
 ```{r}
 # Load the air quality data
-
-library(readxl)
  
 AQ_data=read_excel('data/Air_Quality_Data.xlsx')
 
@@ -153,7 +153,9 @@ krig_pred_var <- function(observations, targets, vgm_model, trend = "None"){
                     observations, 
                     targets, 
                     variogram_v.t)
-  return(c("mean" = mean(V.kriged$var1.var), "sd" = sd(V.kriged$var1.var)))
+  krig.list <- list(V.kriged, mean(V.kriged$var1.var), sd(V.kriged$var1.var))
+  names(krig.list) <- c("Krig.output", "variance.mean", "variance.sd")
+  return(krig.list)
 }
 ```
 
@@ -193,7 +195,8 @@ torontoDAs.demographics.sf <- get_census(dataset='CA21', regions=list(CMA="35535
 
 Projecting:
 ```{r}
-#st_transform(torontoDAs.demographics.sf)
+st_transform(torontoDAs.demographics.sf, 32617)
+st_crs(AQ_data.sf) <- st_crs(torontoDAs.demographics.sf)
 ```
 
 
