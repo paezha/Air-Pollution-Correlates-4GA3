@@ -73,41 +73,8 @@ summary(AQ_data)
 ```
 
 ```{r}
-AQ_plot <- ggplot(data = AQ_data, 
-              aes (x = Lon, y = Lat, size = PM25Avg)) +
-  geom_point(alpha = 0.5) + 
-  scale_color_distiller(palette = "OrRd",
-                        direction = 1)
-
-AQ_plot
-```
-
-```{r}
 AQ_data.sf <- AQ_data |> 
   st_as_sf(coords = c("Lon", "Lat"))
-```
-
-```{r}
-vpolygons <- do.call(c, st_geometry(AQ_data.sf)) |> 
-  st_voronoi() |> 
-  st_collection_extract()
-```
-
-```{r}
-ggplot(vpolygons) + 
-  geom_sf(fill = NA)
-```
-
-```{r}
-AQ_data.v <- AQ_data.sf
-AQ_data.v$geometry <- vpolygons[unlist(st_intersects(AQ_data.sf, vpolygons))] 
-```
-
-```{r}
-ggplot(AQ_data.v) + 
-  geom_sf(aes(fill = PM25Avg)) +
-  scale_fill_distiller(palette = "OrRd", 
-                       direction = 1)
 ```
 
 ```{r}
