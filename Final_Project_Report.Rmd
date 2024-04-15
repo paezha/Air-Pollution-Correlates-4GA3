@@ -159,7 +159,7 @@ st_crs(AQ_data.sf) <- st_crs(torontoDAs.demographics.sf)
 ```
 
 ```{r}
-ggplot(torontoDAs.demographics.sf) + geom_sf() + geom_sf(data = AQ_data.sf, aes(size = PM25Avg))
+ggplot(torontoDAs.demographics.sf) + geom_sf() + geom_sf(data = AQ_data.sf, aes(size = P))
 ```
 ```{r}
 # generating centroids
