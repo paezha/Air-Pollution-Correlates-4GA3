@@ -61,16 +61,6 @@ library(readxl)
 ```
 
 ```{r}
-data("Toronto")
-```
-
-```{r}
-ggplot() +
-  geom_sf(data = Toronto, color = "black", fill = NA, alpha = 1, size = .3) +
-  coord_sf()
-```
-
-```{r}
 # Load the air quality data
  
 AQ_data=read_excel('data/Air_Quality_Data.xlsx')
@@ -78,11 +68,6 @@ AQ_data=read_excel('data/Air_Quality_Data.xlsx')
 
 ```{r}
 summary(AQ_data)
-```
-```{r}
-ggplot() +
-  geom_sf(data = Toronto, color = "black", fill = NA, alpha = 1, size = .3) +
-  coord_sf()
 ```
 
 ```{r}
