@@ -138,15 +138,15 @@ cancensus::set_cancensus_cache_path(paste0(getwd(), "/data"),install = TRUE, ove
 
 ```{r}
 #Getting median household income from cancensus:
-# census tract level 
+# census tract level (GTA region)
 torontoCTs.demographics.sf <- get_census(dataset='CA21', regions=list(CMA="35535"),
                          vectors=c("median_hh_income"="v_CA21_906",
                                    "population_density" = "v_CA21_6"), 
                          level='CT', quiet = TRUE, 
                          geo_format = 'sf', labels = 'short')
 
-# dissemination area level
-torontoDAs.demographics.sf <- get_census(dataset='CA21', regions=list(CMA="35535"),
+# dissemination area level (Toronto CSD)
+torontoDAs.demographics.sf <- get_census(dataset='CA21', regions=list(CSD="3520005"),
                          vectors=c("median_hh_income"="v_CA21_906",
                                    "population_density" = "v_CA21_6"), 
                          level='DA', quiet = TRUE, 
