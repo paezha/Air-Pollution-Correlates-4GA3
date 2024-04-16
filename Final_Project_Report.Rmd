@@ -110,15 +110,15 @@ krig_pred_var <- function(observations, targets, vgm_model, trend = "None"){
                     observations, 
                     targets, 
                     variogram_v.t)
-  krig.list <- list(V.kriged, mean(V.kriged$var1.var), sd(V.kriged$var1.var))
-  names(krig.list) <- c("Krig.output", "variance.mean", "variance.sd")
-  return(krig.list)
+  # krig.list <- list(V.kriged, mean(V.kriged$var1.var), sd(V.kriged$var1.var))
+  #names(krig.list) <- c("Krig.output", "variance.mean", "variance.sd")
+  # return(krig.list)
 }
 ```
 
 ```{r}
 variogram_v <- variogram(P ~ 1, 
-                           data = AQ_data.sf)
+                          data = AQ_data.sf)
 
 variogram_v.t <- fit.variogram(variogram_v, model = vgm("Exp", "Sph", "Gau"))
 ```
