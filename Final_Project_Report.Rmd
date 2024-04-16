@@ -64,12 +64,12 @@ library(readxl)
 # Load the air quality data
  
 AQ_data <- read_excel('data/Air_Quality_Data.xlsx')
-colnames(AQ_data)[2:4] <- c("Y", "X", "P")
-
-AQ_data <- mutate(AQ_data,
-                  X3 = X^3, X2Y = X^2 * Y, X2 = X^2,
-                  XY = X * Y,
-                  Y2 = Y^2, XY2 = X * Y^2, Y3 = Y^3)
+colnames(AQ_data)[4] <- c("P")
+# 
+# AQ_data <- mutate(AQ_data,
+#                   X3 = X^3, X2Y = X^2 * Y, X2 = X^2,
+#                   XY = X * Y,
+#                   Y2 = Y^2, XY2 = X * Y^2, Y3 = Y^3)
 ```
 
 ```{r}
@@ -78,7 +78,7 @@ summary(AQ_data)
 
 ```{r}
 AQ_data.sf <- AQ_data |> 
-  st_as_sf(coords = c("X", "Y"), 
+  st_as_sf(coords = c("Lon", "Lat"), 
            remove = "FALSE") # Keep X and Y columns
 ```
 
@@ -159,6 +159,16 @@ torontoDAs.demographics.sf <- get_census(dataset='CA21', regions=list(CMA="35535
 st_transform(torontoDAs.demographics.sf, 32617)
 st_crs(AQ_data.sf) <- st_crs(torontoDAs.demographics.sf)
 ```
+```{r}
+AQ_data.sf <- AQ_data.sf |>
+  mutate(X = unlist(map(AQ_data.sf$geometry, 1)), 
+         Y = unlist(map(AQ_data.sf$geometry, 2))) |>
+  # Add polynomials
+  mutate(X3 = X^3, X2Y = X^2 * Y, X2 = X^2,
+         XY = X * Y, 
+         Y2 = Y^2, XY2 = X * Y^2, Y3 = Y^3)
+```
+
 
 ```{r}
 ggplot(torontoDAs.demographics.sf) + geom_sf() + geom_sf(data = AQ_data.sf, aes(size = P))
@@ -179,9 +189,9 @@ torontoDAs.centroids <- torontoDAs.centroids |>
          Y2 = Y^2, XY2 = X * Y^2, Y3 = Y^3)
 ```
 
-```{r}
+```{r message = FALSE}
 #kriging
-kriging.output <- krig_pred_var(AQ_data.sf, torontoDAs.centroids, "Exp", "Cubic")
+#kriging.output <- krig_pred_var(AQ_data.sf, torontoDAs.centroids, "Exp", "Cubic")
 
 ```
 
