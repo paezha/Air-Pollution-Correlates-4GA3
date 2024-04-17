@@ -258,9 +258,9 @@ AQ.res <- mutate(AQ_data.sf, "res" = AQ.trend1$residuals)
 ```
 
 
-```{r}
+```{r warning = FALSE, message = FALSE}
 # Trying kriging function again
-toronto_int <- krig_pred_var(AQ_data.sf, torontoDAs.centroids, "Cub", "Cubic")
+toronto_int <- krig_pred_var(AQ_data.sf, torontoDAs.centroids, "Exp", "Cubic")
 ```
 ```{r}
 # Get kriging results
