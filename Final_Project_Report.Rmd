@@ -162,17 +162,16 @@ cancensus::set_cancensus_cache_path(paste0(getwd(), "/data"),install = TRUE, ove
 
 ```{r}
 #Getting median household income from cancensus:
-# census tract level (GTA region)
-torontoCTs.demographics.sf <- get_census(dataset='CA21', regions=list(CMA="35535"),
-                         vectors=c("median_hh_income"="v_CA21_906",
-                                   "population_density" = "v_CA21_6"), 
-                         level='CT', quiet = TRUE, 
-                         geo_format = 'sf', labels = 'short')
 
 # dissemination area level (Toronto CSD)
 torontoDAs.demographics.sf <- get_census(dataset='CA21', regions=list(CSD="3520005"),
                          vectors=c("median_hh_income"="v_CA21_906",
-                                   "population_density" = "v_CA21_6"), 
+                                   "population_density" = "v_CA21_6",
+                                   "median_age" = "v_CA21_389",
+                                   "public_transit" = "v_CA21_7644",
+                                   "automobile" = "v_CA21_7635",
+                                   "walking" = "v_CA21_7647",
+                                   "cycling" = "v_CA21_7650"), 
                          level='DA', quiet = TRUE, 
                          geo_format = 'sf', labels = 'short')
 ```
@@ -244,6 +243,8 @@ ggplot(centroids.withPred) + geom_sf(aes(colour = pred))
 
 ```{r}
 AQ.res <- mutate(AQ_data.sf, "res" = AQ.trend1$residuals)
+AQ.res$resSign <- AQ.res$res > 0
+ggplot(AQ.res) + geom_sf(aes(colour = resSign))
 
 #interpolate the residuals using kpoint mean with k = 5
 
@@ -261,6 +262,7 @@ summary(kpoint.5)
 ```
 
 
+<<<<<<< HEAD
 ```{r}
 # Plot predictions
 ggplot() +
@@ -305,15 +307,6 @@ The call to the function requires a `ppp` object and the argument for the power 
 z_p.idw1 <- idw(AQ_data.ppp, power = 1)
 ```
 
-
-
-Kriging (currently not working)
-
-```{r}
-# Trying kriging function again
-# toronto_int <- krig_pred_var(AQ_data.sf, torontoDAs.centroids, "Sph", "Cubic")
-```
-
 ```{r}
 # Get kriging results
 # V.kriged <- toronto_int$Krig.output
@@ -328,7 +321,6 @@ Kriging (currently not working)
 
 
 =======
->>>>>>> 1961d0d2742524a9f902b4c6b02647c83218166f
 Words
 
 # Methods
