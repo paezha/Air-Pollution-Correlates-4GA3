@@ -248,6 +248,8 @@ ggplot(centroids.withPred) + geom_sf(aes(colour = pred))
 
 ```{r}
 AQ.res <- mutate(AQ_data.sf, "res" = AQ.trend1$residuals)
+AQ.res$resSign <- AQ.res$res > 0
+ggplot(AQ.res) + geom_sf(aes(colour = resSign))
 
 #interpolate the residuals using kpoint mean with k = 5
 
