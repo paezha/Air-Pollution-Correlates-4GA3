@@ -117,10 +117,32 @@ krig_pred_var <- function(observations, targets, vgm_model, trend = "None"){
 ```
 
 ```{r}
+# Making air quality variogram
 variogram_v <- variogram(P ~ 1, 
                            data = AQ_data.sf)
 
+# Create best-fitting theoretical curve
 variogram_v.t <- fit.variogram(variogram_v, model = vgm("Exp", "Sph", "Gau"))
+variogram_v.t
+
+gamma.t <- variogramLine(variogram_v.t, maxdist = 0.5)
+
+# Plot semivariogram with fitted line
+ggplot(data = variogram_v, 
+       aes(x = dist,
+           y = gamma)) + 
+  geom_point() + 
+  # Add labels to indicate the number of pairs of observations used
+  # in the calculation of each point in the variogram
+  geom_text(aes(label = np), 
+            nudge_y = 10) +
+  # Add theoretical semivariogram
+  geom_line(data = gamma.t, 
+            aes(x = dist, 
+                y = gamma)) + 
+  # Add labels to axes 
+  xlab("Distance") + 
+  ylab("Semivariance") 
 ```
 
 
@@ -159,6 +181,7 @@ torontoDAs.demographics.sf <- get_census(dataset='CA21', regions=list(CSD="35200
 st_transform(torontoDAs.demographics.sf, 32617)
 st_crs(AQ_data.sf) <- st_crs(torontoDAs.demographics.sf)
 ```
+
 ```{r}
 AQ_data.sf <- AQ_data.sf |>
   mutate(X = unlist(map(AQ_data.sf$geometry, 1)), 
@@ -173,6 +196,8 @@ AQ_data.sf <- AQ_data.sf |>
 ```{r}
 ggplot(torontoDAs.demographics.sf) + geom_sf() + geom_sf(data = AQ_data.sf, aes(size = P))
 ```
+
+
 ```{r}
 # generating centroids
 torontoDAs.centroids <- st_centroid(torontoDAs.demographics.sf)
@@ -218,7 +243,7 @@ AQ.preds1 <- predict(AQ.trend1,
 
 centroids.withPred <- mutate(torontoDAs.centroids, "pred" = AQ.preds1$fit[,1])
 
-ggplot(centroids.withPred) + geom_sf(aes(colour = pred))
+ggplot(centroids.withPred) + geom_sf(aes(colour = pred)) 
 ```
 
 ```{r}
@@ -232,6 +257,22 @@ AQ.res <- mutate(AQ_data.sf, "res" = AQ.trend1$residuals)
 #                        k = 5)
 ```
 
+
+```{r}
+# Trying kriging function again
+toronto_int <- krig_pred_var(AQ_data.sf, torontoDAs.centroids, "Cub", "Cubic")
+```
+```{r}
+# Get kriging results
+V.kriged <- toronto_int$Krig.output
+variance_mean <- toronto_int$variance.mean
+variance_sd <- toronto_int$variance.sd
+
+# Output results
+V.kriged
+variance_mean
+variance_sd
+```
 
 
 =======
