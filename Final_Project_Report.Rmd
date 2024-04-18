@@ -279,10 +279,14 @@ variance_sd
 ## IDW
 
 # Get minimum and maximum values for aquifer data
-min.X <- min(AQ_data$Lon)
-min.Y <- min(AQ_data$Lat)
-max.X <- max(AQ_data$Lon)
-max.Y <- max(AQ_data$Lat)
+toronto.bbox <- st_bbox(torontoDAs.demographics.sf)
+
+min.X <- min(min(AQ_data$Lon), toronto.bbox$xmin)
+min.Y <- min(min(AQ_data$Lat), toronto.bbox$ymin)
+max.X <- max(max(AQ_data$Lon), toronto.bbox$xmax)
+max.Y <- max(max(AQ_data$Lat), toronto.bbox$ymax)
+
+
 x.range <- max.X - min.X
 y.range <- max.Y - min.Y
 
@@ -382,8 +386,15 @@ P.idw.df <- data.frame("X" = X.vec, "Y" = Y.vec, "P" = z.vec)
 P.idw.sf <- st_as_sf(P.idw.df, coords = c("X", "Y"))
 st_crs(P.idw.sf) <- st_crs(torontoDAs.demographics.sf)
 
-ggplot(P.idw.sf) + geom_sf(aes(colour = P)) + geom_sf(data = torontoDAs.demographics.sf)
+ggplot(P.idw.sf) + geom_sf(aes(colour = P)) + geom_sf(data = torontoDAs.demographics.sf) 
 ```
+
+```{r}
+toronto.DAs.P <- st_join(torontoDAs.demographics.sf, P.idw.sf, join = st_contains)
+
+ggplot(toronto.DAs.P) + geom_sf(aes(fill = P))
+```
+
 
 ```{r}
 # k point means
@@ -394,11 +405,11 @@ kpoint.10 <- kpointmean(source_xy = AQ_data.sf,
                        k = 10) |>
   rename(P = z)
 
-ggplot() +
-  geom_sf(data = kpoint.10, 
-            aes(color = P)) +
-  scale_color_distiller(palette = "OrRd", 
-                       direction = 1)
+# ggplot() +
+#   geom_sf(data = kpoint.10, 
+#             aes(color = P)) +
+#   scale_color_distiller(palette = "OrRd", 
+#                        direction = 1)
 ```
 
 
