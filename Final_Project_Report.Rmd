@@ -279,14 +279,10 @@ variance_sd
 ## IDW
 
 # Get minimum and maximum values for aquifer data
-toronto.bbox <- st_bbox(torontoDAs.demographics.sf)
-
-min.X <- min(min(AQ_data$Lon), toronto.bbox$xmin)
-min.Y <- min(min(AQ_data$Lat), toronto.bbox$ymin)
-max.X <- max(max(AQ_data$Lon), toronto.bbox$xmax)
-max.Y <- max(max(AQ_data$Lat), toronto.bbox$ymax)
-
-
+min.X <- min(AQ_data$Lon)
+min.Y <- min(AQ_data$Lat)
+max.X <- max(AQ_data$Lon)
+max.Y <- max(AQ_data$Lat)
 x.range <- max.X - min.X
 y.range <- max.Y - min.Y
 
@@ -386,13 +382,16 @@ P.idw.df <- data.frame("X" = X.vec, "Y" = Y.vec, "P" = z.vec)
 P.idw.sf <- st_as_sf(P.idw.df, coords = c("X", "Y"))
 st_crs(P.idw.sf) <- st_crs(torontoDAs.demographics.sf)
 
-ggplot(P.idw.sf) + geom_sf(aes(colour = P)) + geom_sf(data = torontoDAs.demographics.sf) 
+ggplot(P.idw.sf) + geom_sf(aes(colour = P)) + geom_sf(data = torontoDAs.demographics.sf)
+```
+```{r}
+# Intersect interpolated emissions with Toronto census information
+idw_intersect <- st_inter(torontoDAs.centroids, P.idw.sf)
 ```
 
 ```{r}
-toronto.DAs.P <- st_join(torontoDAs.demographics.sf, P.idw.sf, join = st_contains)
-
-ggplot(toronto.DAs.P) + geom_sf(aes(fill = P))
+# Plot the data
+ggplot(data = idw_intersect) + geom_sf(aes(colour = P))
 ```
 
 
@@ -405,15 +404,46 @@ kpoint.10 <- kpointmean(source_xy = AQ_data.sf,
                        k = 10) |>
   rename(P = z)
 
-# ggplot() +
-#   geom_sf(data = kpoint.10, 
-#             aes(color = P)) +
-#   scale_color_distiller(palette = "OrRd", 
-#                        direction = 1)
+ggplot() +
+  geom_sf(data = kpoint.10, 
+            aes(color = P)) +
+  scale_color_distiller(palette = "OrRd", 
+                       direction = 1)
 ```
-some more code
+```{r}
+# Add interpolation to DA centroids
+toDA.centroids.idw <- mutate(torontoDAs.centroids, 
+                             PM25 = kpoint.10$P)
 
-SEPARATOR
+# Plot the centroids emissions
+ggplot() +
+  geom_sf(data = toDA.centroids.idw, 
+            aes(color = PM25)) +
+  scale_color_distiller(palette = "OrRd", 
+                       direction = 1)
+
+# Plot the centroids emissions
+ggplot() +
+  geom_sf(data = toDA.centroids.idw, 
+            aes(color = opulation)) +
+  scale_color_distiller(palette = "OrRd", 
+                       direction = 1)
+
+# Plot the centroids emissions
+ggplot() +
+  geom_sf(data = toDA.centroids.idw, 
+            aes(color = median_hh_income)) +
+  scale_color_distiller(palette = "OrRd", 
+                       direction = 1)
+
+# Plot the centroids emissions
+ggplot() +
+  geom_sf(data = toDA.centroids.idw, 
+            aes(color = automobile/Population)) +
+  scale_color_distiller(palette = "OrRd", 
+                       direction = 1)
+```
+
 
 Words
 
