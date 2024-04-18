@@ -379,6 +379,10 @@ z.vec <- c(P.idw_pixels$v)
 Y.vec <- rep(P.idw_pixels$yrow, 128)
 X.vec <- rep(P.idw_pixels$xcol, each = 128)
 P.idw.df <- data.frame("X" = X.vec, "Y" = Y.vec, "P" = z.vec)
+P.idw.sf <- st_as_sf(P.idw.df, coords = c("X", "Y"))
+st_crs(P.idw.sf) <- st_crs(torontoDAs.demographics.sf)
+
+ggplot(P.idw.sf) + geom_sf(aes(colour = P)) + geom_sf(data = torontoDAs.demographics.sf)
 ```
 
 ```{r}
@@ -387,7 +391,7 @@ P.idw.df <- data.frame("X" = X.vec, "Y" = Y.vec, "P" = z.vec)
 kpoint.10 <- kpointmean(source_xy = AQ_data.sf, 
                        target_xy = torontoDAs.centroids, 
                        z = P, 
-                       k = 33) |>
+                       k = 10) |>
   rename(P = z)
 
 ggplot() +
