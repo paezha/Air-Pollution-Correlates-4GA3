@@ -411,7 +411,25 @@ kpoint.10 <- kpointmean(source_xy = AQ_data.sf,
 #   scale_color_distiller(palette = "OrRd", 
 #                        direction = 1)
 ```
-some more code again
+```{r}
+k.vals <- seq(1, 30, 5)
+mse_result <- NULL
+for(k in k.vals){
+  mse.vec <- c()
+  for (i in 1:nrow(AQ_data.sf)){
+    kpoint.k <- kpointmean(source_xy = AQ_data.sf, 
+                       target_xy = AQ_data.sf[1,], 
+                       z = P, 
+                       k = k)
+
+  }
+  mse_result <- c(mse_result,
+                  Metrics::mse(AQ_data.ppp$marks,P_idw))
+}
+optimal_power <- powers[which.min(mse_result)]
+optimal_power
+```
+
 
 SEPARATOR
 
