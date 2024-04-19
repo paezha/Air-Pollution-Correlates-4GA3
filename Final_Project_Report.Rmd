@@ -67,6 +67,7 @@ library(Metrics) # for MSE function
 library(patchwork) # for plotting multiple ggplots together
 library(stringr) # for wrapping text in ggplot
 library(gridExtra)
+library(knitr)
 ```
 
 ```{r}
@@ -273,7 +274,7 @@ ggplot(toDAs.idw.poly) + geom_sf(aes(fill = P), colour = NA) + labs(title = "Int
 chloropleth.plot <- function(var, var.name){
   ggplot(data = toDAs.idw.poly) +
   geom_sf(aes(fill = var), colour = NA) + 
-    scale_fill_viridis_c(option = "magma") + labs(title = str_wrap(var.name, 30), fill = str_wrap(var.name, 30))
+    scale_fill_viridis_c(option = "magma") + labs(title = str_wrap(var.name, 30), fill = "value")
 }
 ```
 
@@ -303,17 +304,23 @@ grid.arrange(pop_den.chl, minority.chl, med_inc.chl, med_age.chl, nrow = 2)
 
 
 ```{r}
+torontoDAs.nb <- poly2nb(pl = toDAs.idw.poly, queen = TRUE)
+torontoDAs.w <- nb2listw(torontoDAs.nb, zero.policy = TRUE)
+
 torontoDAsna.nb <- poly2nb(pl = toDAs.NAomit, queen = TRUE)
 torontoDAsna.w <- nb2listw(torontoDAsna.nb, zero.policy = TRUE)
 ```
 
+```{r}
+moran.test(toDAs.idw.poly$P, torontoDAs.w)
+```
 
 
 ```{r}
 # function for returning moran's I and p value
 moran.test.sum <- function(var){
   m <- moran.test(var, torontoDAsna.w)
-  return(c("I" = m$estimate[1], "p.val" = m$p.value))
+  return(c("I" = round(m$estimate[1],4), "p.val" = ifelse(m$p.value < 2.2e-16, "< 2.2e-16", m$p.value)))
 }
 ```
 
@@ -331,7 +338,7 @@ moran.mat <- matrix(moran.vec, ncol = 3, byrow = TRUE)
 
 colnames(moran.mat) <- c("Variable", "Moran's Statistic (I)", "p-value")
 
-moran.mat
+kable(moran.mat)
 ```
 
 
