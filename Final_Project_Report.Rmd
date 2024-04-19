@@ -12,7 +12,7 @@ author:
 - name: Cindia Dao-Vu
   student_number: 400319161
 - name: Ifra Awan
-  student_number:400261667 
+  student_number: 400261667 
 - name: Oliver
   student_number: 
 subject: "ENVSOCTY 4GA3"
@@ -47,7 +47,7 @@ rm(list = ls())
 library(deldir) # Delaunay Triangulation and Dirichlet (Voronoi) Tessellation
 library(isdas) # Companion Package for Book An Introduction to Spatial Data Analysis and Statistics
 #library(plotly) # Create Interactive Web Graphics via 'plotly.js'
-library(gstat)
+library(gstat) # for IDW
 library(spatstat) # Spatial Point Pattern Analysis, Model-Fitting, Simulation, Tests
 library(spatstat.explore) # Exploratory Data Analysis for the 'spatstat' Family
 library(spdep) # Spatial Dependence: Weighting Schemes, Statistics
@@ -57,8 +57,10 @@ library(cancensus) #retrieve Canadian Census Data
 library(geojsonsf)
 
 library(stars)
-library(readxl)
-library(Metrics)
+library(readxl) # for importing data from excel
+library(Metrics) # for MSE function
+library(patchwork) # for plotting multiple ggplots together
+library(stringr)
 ```
 
 ```{r}
@@ -163,26 +165,30 @@ cancensus::set_cancensus_cache_path(paste0(getwd(), "/data"),install = TRUE, ove
 #Getting median household income from cancensus:
 
 # census tract level (Toronto CSD)
-torontoCTs.demographics.sf <- get_census(dataset='CA21', regions=list(CSD="3520005"),
-                         vectors=c("median_hh_income"="v_CA21_906",
-                                   "population_density" = "v_CA21_6",
-                                   "median_age" = "v_CA21_389",
-                                   "public_transit" = "v_CA21_7644",
-                                   "automobile" = "v_CA21_7635",
-                                   "walking" = "v_CA21_7647",
-                                   "cycling" = "v_CA21_7650"), 
-                         level='CT', quiet = TRUE, 
-                         geo_format = 'sf', labels = 'short')
+# torontoCTs.demographics.sf <- get_census(dataset='CA21', regions=list(CSD="3520005"),
+#                          vectors=c("median_hh_income"="v_CA21_906",
+#                                    "population_density" = "v_CA21_6",
+#                                    "median_age" = "v_CA21_389",
+#                                    "public_transit" = "v_CA21_7644",
+#                                    "automobile" = "v_CA21_7635",
+#                                    "walking" = "v_CA21_7647",
+#                                    "cycling" = "v_CA21_7650"), 
+#                          level='CT', quiet = TRUE, 
+#                          geo_format = 'sf', labels = 'short')
 
 # dissemination area level (Toronto CSD)
 torontoDAs.demographics.sf <- get_census(dataset='CA21', regions=list(CSD="3520005"),
                          vectors=c("median_hh_income"="v_CA21_906",
+                                   "pop21" = "v_CA21_1",
                                    "population_density" = "v_CA21_6",
                                    "median_age" = "v_CA21_389",
                                    "public_transit" = "v_CA21_7644",
                                    "automobile" = "v_CA21_7635",
                                    "walking" = "v_CA21_7647",
-                                   "cycling" = "v_CA21_7650"), 
+                                   "cycling" = "v_CA21_7650",
+                                   "minority_population" = "v_CA21_4875",
+                                   "dwellings" = "v_CA21_434",
+                                   "bachelors" = "v_CA21_5847"), 
                          level='DA', quiet = TRUE, 
                          geo_format = 'sf', labels = 'short')
 ```
@@ -192,7 +198,7 @@ torontoDAs.demographics.sf <- get_census(dataset='CA21', regions=list(CSD="35200
 #Projecting:
 st_transform(torontoDAs.demographics.sf, 32617)
 #st_transform(torontoDAs.demographics.sf, 4269)
-st_crs(torontoCTs.demographics.sf) <- st_crs(torontoDAs.demographics.sf)
+#st_crs(torontoCTs.demographics.sf) <- st_crs(torontoDAs.demographics.sf)
 st_crs(AQ_data.sf) <- st_crs(torontoDAs.demographics.sf)
 ```
 
@@ -215,7 +221,7 @@ ggplot(torontoDAs.demographics.sf) + geom_sf() + geom_sf(data = AQ_data.sf, aes(
 ```{r}
 # generating centroids
 torontoDAs.centroids <- st_centroid(torontoDAs.demographics.sf)
-torontoCTs.centroids <- st_centroid(torontoCTs.demographics.sf)
+#torontoCTs.centroids <- st_centroid(torontoCTs.demographics.sf)
 ```
 
 ```{r}
@@ -230,33 +236,16 @@ torontoDAs.centroids <- torontoDAs.centroids |>
 ```
 
 
-
-```{r warning = FALSE, message = FALSE}
-# Trying kriging function again
-toronto_int <- krig_pred_var(AQ_data.sf, torontoDAs.centroids, "Exp", "Cubic")
-```
-```{r}
-# Get kriging results
-V.kriged <- toronto_int$Krig.output
-variance_mean <- toronto_int$variance.mean
-variance_sd <- toronto_int$variance.sd
-
-# Output results
-V.kriged
-variance_mean
-variance_sd
-```
-
 ```{r}
 ## IDW
 
-to.bbox <- st_bbox(torontoCTs.demographics.sf)
+to.bbox <- st_bbox(torontoDAs.demographics.sf)
 
 # Get minimum and maximum values for aquifer data
-min.X <- min(min(AQ_data$Lon), tobbox$xmin)
-min.Y <- min(min(AQ_data$Lat), tobbox$ymin)
-max.X <- max(max(AQ_data$Lon), tobbox$xmax)
-max.Y <- max(max(AQ_data$Lat), tobbox$ymax)
+min.X <- min(min(AQ_data$Lon), to.bbox$xmin)
+min.Y <- min(min(AQ_data$Lat), to.bbox$ymin)
+max.X <- max(max(AQ_data$Lon), to.bbox$xmax)
+max.Y <- max(max(AQ_data$Lat), to.bbox$ymax)
 x.range <- max.X - min.X
 y.range <- max.Y - min.Y
 
@@ -318,18 +307,21 @@ st_crs(P.idw.sf) <- st_crs(torontoDAs.demographics.sf)
 
 
 ggplot(P.idw.sf) + geom_sf(aes(colour = P)) + geom_sf(data = torontoDAs.demographics.sf)
-ggplot(P.idw.sf) + geom_sf(aes(colour = P)) + geom_sf(data = torontoCTs.demographics.sf)
 ```
 
 ```{r}
+# use spatial join to add the PM25 value of the nearest pixel to each centroid
 toDAs.idw <- st_join(torontoDAs.centroids, P.idw.sf, join = st_nearest_feature)
 
+#ggplot(toDAs.idw) + geom_sf(aes(colour = P))
 
-ggplot(toDAs.idw) + geom_sf(aes(colour = P))
+toDAs.idw.poly <- mutate(torontoDAs.demographics.sf, P = toDAs.idw$P)
+toDAs.NAomit <- na.omit(toDAs.idw.poly)
+ggplot(toDAs.idw.poly) + geom_sf(aes(fill = P), colour = NA) + labs(fill = "interpolated Particulate Matter value") + scale_fill_viridis_c(option = "magma")
 
-toCTs.idw <- na.omit(st_join(torontoCTs.demographics.sf, P.idw.sf, join = st_intersects))
-
-ggplot(toCTs.idw) + geom_sf(aes(fill = P), colour = NA)
+# toCTs.idw <- na.omit(st_join(torontoCTs.demographics.sf, P.idw.sf, join = st_intersects))
+# 
+# ggplot(toCTs.idw) + geom_sf(aes(fill = P), colour = NA)
 ```
 
 
@@ -357,107 +349,73 @@ ggplot(toCTs.idw) + geom_sf(aes(fill = P), colour = NA)
 ```
 
 ```{r}
-# k point means
 
-kpoint.23 <- kpointmean(source_xy = AQ_data.sf, 
-                       target_xy = torontoDAs.centroids, 
-                       z = P, 
-                       k = 23) |>
-  rename(P = z)
+chloropleth.plot <- function(var, var.name){
+  ggplot(data = toDAs.idw.poly) +
+  geom_sf(aes(fill = var), colour = NA) + 
+    scale_fill_viridis_c(option = "magma") + labs(title = str_wrap(var.name, 30), fill = str_wrap(var.name, 30))
+}
+```
 
-ct.kpoint <- kpointmean(source_xy = AQ_data.sf, 
-                       target_xy = torontoCTs.centroids, 
-                       z = P, 
-                       k = 23) |>
-  rename(P = z)
+```{r}
+pop_den.chl <- chloropleth.plot(toDAs.idw.poly$pop21/toDAs.idw.poly$`Area (sq km)`, "Population density")
+dwelling.chl <- chloropleth.plot(toDAs.idw.poly$dwellings/toDAs.idw.poly$`Area (sq km)`, "Dwellings density")
+med_inc.chl <- chloropleth.plot(toDAs.idw.poly$median_hh_income, "Median household income")
+med_age.chl <- chloropleth.plot(toDAs.idw.poly$median_age, "Median age")
+automobile.chl <- chloropleth.plot(toDAs.idw.poly$automobile/toDAs.idw.poly$pop21, "Proportion commuting via automobile")
+public_transit.chl <- chloropleth.plot(toDAs.idw.poly$public_transit/toDAs.idw.poly$pop21, "Proportion commuting via public transit")
+walking.chl <- chloropleth.plot(toDAs.idw.poly$automobile/toDAs.idw.poly$pop21, "Proportion commuting via walking")
+cycling.chl <- chloropleth.plot(toDAs.idw.poly$cycling/toDAs.idw.poly$pop21, "Proportion commuting via cycling")
+```
 
-ggplot() +
-  geom_sf(data = kpoint.16, 
-            aes(color = P)) +
-  scale_color_distiller(palette = "OrRd", 
-                       direction = 1)
+```{r}
+(pop_den.chl | dwelling.chl) /
+  (med_inc.chl | med_age.chl)
 
-ggplot() +
-  geom_sf(data = ct.kpoint, 
-            aes(color = P)) +
-  scale_color_distiller(palette = "OrRd", 
-                       direction = 1)
+(automobile.chl | public_transit.chl) /
+  (walking.chl | cycling.chl)
+```
+
+
+```{r}
+torontoDAs.nb <- poly2nb(pl = toDAs.idw.poly, queen = TRUE)
+torontoDAs.w <- nb2listw(torontoDAs.nb, zero.policy = TRUE)
+
+torontoDAsna.nb <- poly2nb(pl = toDAs.NAomit, queen = TRUE)
+torontoDAsna.w <- nb2listw(torontoDAsna.nb, zero.policy = TRUE)
+
+# torontoCTs.nb <- poly2nb(pl = toCTs.idw)
+# torontoCTs.w <- nb2listw(torontoCTs.nb)
+# 
+# torontoCTs.nb.k <- poly2nb(pl = toCT.kpoints)
+# torontoCTs.k.w <- nb2listw(torontoCTs.nb.k, zero.policy = TRUE)
 ```
 
 
 
 ```{r}
-
-# Add interpolation to DA centroids
-toDA.centroids.kpoints <- mutate(torontoDAs.centroids, 
-                             PM25 = kpoint.23$P)
-
-
-toDA.kpoints <- mutate(torontoDAs.demographics.sf, 
-                             PM25 = kpoint.23$P)
-
-toCT.kpoints <- mutate(torontoCTs.demographics.sf, 
-                             PM25 = ct.kpoint$P)
-
-# Plot the centroids emissions
-ggplot() +
-  geom_sf(data = toDA.kpoints, 
-            aes(fill = PM25), colour = NA) +
-  scale_color_brewer(palette = "OrRd", 
-                       direction = 1)
-
-ggplot() +
-  geom_sf(data = toCT.kpoints, 
-            aes(fill = PM25), colour = NA) +
-  scale_color_brewer(palette = "OrRd", 
-                       direction = 1)
-
-ggplot() +
-  geom_sf(data = toDA.kpoints, 
-            aes(color = PM25)) +
-  scale_color_distiller(palette = "OrRd", 
-                       direction = 1)
-
-# Plot the populations
-ggplot() +
-  geom_sf(data = torontoDAs.demographics.sf, 
-            aes(fill = Population)) +
-  scale_color_distiller(palette = "OrRd", 
-                       direction = 1)
-
-# Plot the median HH income
-ggplot() +
-  geom_sf(data = torontoDAs.demographics.sf, 
-            aes(fill = median_hh_income)) +
-  scale_color_distiller(palette = "OrRd", 
-                       direction = 1)
-
-# Plot the centroids emissions
-ggplot() +
-  geom_sf(data = toDA.centroids.idw, 
-            aes(color = automobile/Population)) +
-  scale_color_distiller(palette = "OrRd", 
-                       direction = 1)
+moran.test.sum <- function(var){
+  m <- moran.test(var, torontoDAsna.w)
+  return(c("I" = m$estimate[1], "p.val" = m$p.value))
+}
 ```
-
 ```{r}
-# torontoDAs.nb <- poly2nb(pl = toDAs.idw, queen = TRUE)
-# torontoDAs.w <- nb2listw(torontoDAs.nb)
+moran.vec <- c("Population density", moran.test.sum(toDAs.NAomit$population_density),
+               "Median household income", moran.test.sum(toDAs.NAomit$median_hh_income),
+               "Median age", moran.test.sum(toDAs.NAomit$median_age),
+               "Dwelling density", moran.test.sum(toDAs.NAomit$dwellings/toDAs.NAomit$`Area (sq km)`),
+               "Proportion commuting via automobile", moran.test.sum(toDAs.NAomit$automobile/toDAs.NAomit$pop21),
+               "Proportion commuting via public transportation", moran.test.sum(toDAs.NAomit$public_transit/toDAs.NAomit$pop21),
+               "Proportion commuting via walking", moran.test.sum(toDAs.NAomit$walking/toDAs.NAomit$pop21),
+               "Proportion commuting via cycling", moran.test.sum(toDAs.NAomit$cycling/toDAs.NAomit$pop21))
 
-torontoCTs.nb <- poly2nb(pl = toCTs.idw)
-torontoCTs.w <- nb2listw(torontoCTs.nb)
+moran.mat <- matrix(moran.vec, ncol = 3, byrow = TRUE)
 
-torontoCTs.nb.k <- poly2nb(pl = toCT.kpoints)
-torontoCTs.k.w <- nb2listw(torontoCTs.nb.k, zero.policy = TRUE)
+colnames(moran.mat) <- c("Variable", "Moran's Statistic (I)", "p-value")
+
+moran.mat
 ```
 
-
-```{r}
-moran.test(toCTs.idw$P, torontoCTs.w)
-
-moran.test(toCT.kpoints$PM25, torontoCTs.k.w)
-
-```
 
 ```{r}
 
@@ -465,24 +423,70 @@ moran.test(toCT.kpoints$PM25, torontoCTs.k.w)
 # Ask for variable
 linreg <- function(var, name){
   # Complete linear regression and output summary
-  PM25_var_corr <- lm(formula = PM25 ~ var, data = toCT.kpoints)
-  summary(PM25_var_corr)
+  PM25_var_corr <- lm(formula = P ~ var, data = toDAs.NAomit)
+  #summary(PM25_var_corr)
   # Get variable name and title
-  title <- paste("PM25 &", name, "- Linear Regression")
+  #title <- paste("PM25 &", name, "- Linear Regression")
+  title <- paste(name, 
+                 "; AR2 =", round(summary(PM25_var_corr)$r.squared, 2))
   # Plot results
-  ggplot(data = toCT.kpoints, aes(x = var, y = PM25)) + 
+  ggplot(data = toDAs.NAomit, aes(x = var, y = P)) + 
     geom_point() + 
     geom_abline(slope = PM25_var_corr$coefficients[2], 
                 intercept = PM25_var_corr$coefficients[1], 
                 colour = "Blue", 
                 linewidth = 1) + 
-    labs(title = title) 
+    labs(title = str_wrap(title, 30)) +
+    xlab(name) + ylab("Particulate Matter")
     
 }
 ```
 
 ```{r}
-linreg(toCT.kpoints$Population, "Population")
+Pop_den.lm <- linreg(toDAs.NAomit$population_density, "Population density")
+med_inc.lm <- linreg(toDAs.NAomit$median_hh_income, "Median household income")
+med_age.lm <- linreg(toDAs.NAomit$median_age, "Median Age")
+automobile.lm <- linreg(toDAs.NAomit$automobile/toDAs.NAomit$pop21, "Proportion commuting via automobile")
+public_transit.lm <- linreg(toDAs.NAomit$public_transit/toDAs.NAomit$pop21, "Proportion commuting via public transit")
+walking.lm <- linreg(toDAs.NAomit$walking/toDAs.NAomit$pop21, "Proportion commuting via walking")
+cycling.lm <- linreg(toDAs.NAomit$cycling/toDAs.NAomit$pop21, "Proportion commuting via cycling")
+minority.lm <- linreg(toDAs.NAomit$minority_population/toDAs.NAomit$pop21, "Proportion of visible  minorities")
+dwellings.lm <- linreg(toDAs.NAomit$dwellings/toDAs.NAomit$`Area (sq km)`, "Dwellings density")
+bachelors.lm <- linreg(toDAs.NAomit$bachelors/toDAs.NAomit$pop21, "Proportion with at least a bachelor's")
+```
+
+```{r}
+(Pop_den.lm | med_inc.lm) /
+  (med_age.lm | dwellings.lm)
+
+(automobile.lm | public_transit.lm) /
+(walking.lm | cycling.lm )
+
+bachelors.lm
+```
+
+```{r}
+toDAs.NAomit$minority_density <- toDAs.NAomit$minority_population/toDAs.NAomit$minority_population
+toDAs.NAomit$automobile_prop <- toDAs.NAomit$automobile/toDAs.NAomit$pop21
+toDAs.NAomit$public_tr_prop <- toDAs.NAomit$public_transit/toDAs.NAomit$pop21
+toDAs.NAomit$walking_prop <- toDAs.NAomit$walking/toDAs.NAomit$pop21
+toDAs.NAomit$cycling_prop <- toDAs.NAomit$cycling/toDAs.NAomit$pop21
+```
+
+```{r}
+lm.all_vars <- lm(formula = P ~ population_density + 
+                    dwelling_density + 
+                    median_age +
+                    median_hh_income +
+                    automobile_prop +
+                    public_tr_prop + 
+                    walking_prop +
+                    cycling_prop, 
+                  data = toDAs.NAomit)
+```
+
+```{r}
+summary(lm.all_vars)
 ```
 
 
