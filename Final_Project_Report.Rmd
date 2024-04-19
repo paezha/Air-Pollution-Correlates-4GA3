@@ -322,9 +322,10 @@ ggplot(P.idw.sf) + geom_sf(aes(colour = P)) + geom_sf(data = torontoCTs.demograp
 ```
 
 ```{r}
-toDAs.idw <- st_join(torontoDAs.demographics.sf, P.idw.sf, join = st_intersects)
+toDAs.idw <- st_join(torontoDAs.centroids, P.idw.sf, join = st_nearest_feature)
 
-ggplot(toDAs.idw) + geom_sf(aes(fill = P), colour = NA)
+
+ggplot(toDAs.idw) + geom_sf(aes(colour = P))
 
 toCTs.idw <- na.omit(st_join(torontoCTs.demographics.sf, P.idw.sf, join = st_intersects))
 
@@ -444,7 +445,7 @@ ggplot() +
 # torontoDAs.w <- nb2listw(torontoDAs.nb)
 
 torontoCTs.nb <- poly2nb(pl = toCTs.idw)
-torontoCTs.w <- nb2listw(torontoDAs.nb)
+torontoCTs.w <- nb2listw(torontoCTs.nb)
 
 torontoCTs.nb.k <- poly2nb(pl = toCT.kpoints)
 torontoCTs.k.w <- nb2listw(torontoCTs.nb.k, zero.policy = TRUE)
