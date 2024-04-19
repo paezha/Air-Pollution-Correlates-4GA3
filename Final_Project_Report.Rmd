@@ -359,17 +359,17 @@ chloropleth.plot <- function(var, var.name){
 
 ```{r}
 pop_den.chl <- chloropleth.plot(toDAs.idw.poly$pop21/toDAs.idw.poly$`Area (sq km)`, "Population density")
-dwelling.chl <- chloropleth.plot(toDAs.idw.poly$dwellings/toDAs.idw.poly$`Area (sq km)`, "Dwellings density")
+minority.chl <- chloropleth.plot(toDAs.idw.poly$minority_population/toDAs.idw.poly$pop21, "Proportion visible minority")
 med_inc.chl <- chloropleth.plot(toDAs.idw.poly$median_hh_income, "Median household income")
 med_age.chl <- chloropleth.plot(toDAs.idw.poly$median_age, "Median age")
 automobile.chl <- chloropleth.plot(toDAs.idw.poly$automobile/toDAs.idw.poly$pop21, "Proportion commuting via automobile")
 public_transit.chl <- chloropleth.plot(toDAs.idw.poly$public_transit/toDAs.idw.poly$pop21, "Proportion commuting via public transit")
-walking.chl <- chloropleth.plot(toDAs.idw.poly$automobile/toDAs.idw.poly$pop21, "Proportion commuting via walking")
+walking.chl <- chloropleth.plot(toDAs.idw.poly$walking/toDAs.idw.poly$pop21, "Proportion commuting via walking")
 cycling.chl <- chloropleth.plot(toDAs.idw.poly$cycling/toDAs.idw.poly$pop21, "Proportion commuting via cycling")
 ```
 
 ```{r}
-(pop_den.chl | dwelling.chl) /
+(pop_den.chl | minority.chl) /
   (med_inc.chl | med_age.chl)
 
 (automobile.chl | public_transit.chl) /
@@ -403,7 +403,7 @@ moran.test.sum <- function(var){
 moran.vec <- c("Population density", moran.test.sum(toDAs.NAomit$population_density),
                "Median household income", moran.test.sum(toDAs.NAomit$median_hh_income),
                "Median age", moran.test.sum(toDAs.NAomit$median_age),
-               "Dwelling density", moran.test.sum(toDAs.NAomit$dwellings/toDAs.NAomit$`Area (sq km)`),
+               "Proportion visible minority", moran.test.sum(toDAs.NAomit$minority_population/toDAs.NAomit$pop21),
                "Proportion commuting via automobile", moran.test.sum(toDAs.NAomit$automobile/toDAs.NAomit$pop21),
                "Proportion commuting via public transportation", moran.test.sum(toDAs.NAomit$public_transit/toDAs.NAomit$pop21),
                "Proportion commuting via walking", moran.test.sum(toDAs.NAomit$walking/toDAs.NAomit$pop21),
@@ -457,16 +457,14 @@ bachelors.lm <- linreg(toDAs.NAomit$bachelors/toDAs.NAomit$pop21, "Proportion wi
 
 ```{r}
 (Pop_den.lm | med_inc.lm) /
-  (med_age.lm | dwellings.lm)
+  (med_age.lm | minority.lm)
 
 (automobile.lm | public_transit.lm) /
 (walking.lm | cycling.lm )
-
-bachelors.lm
 ```
 
 ```{r}
-toDAs.NAomit$minority_density <- toDAs.NAomit$minority_population/toDAs.NAomit$minority_population
+toDAs.NAomit$minority_proportion <- toDAs.NAomit$minority_population/toDAs.NAomit$pop21
 toDAs.NAomit$automobile_prop <- toDAs.NAomit$automobile/toDAs.NAomit$pop21
 toDAs.NAomit$public_tr_prop <- toDAs.NAomit$public_transit/toDAs.NAomit$pop21
 toDAs.NAomit$walking_prop <- toDAs.NAomit$walking/toDAs.NAomit$pop21
@@ -475,7 +473,7 @@ toDAs.NAomit$cycling_prop <- toDAs.NAomit$cycling/toDAs.NAomit$pop21
 
 ```{r}
 lm.all_vars <- lm(formula = P ~ population_density + 
-                    dwelling_density + 
+                    minority_proportion + 
                     median_age +
                     median_hh_income +
                     automobile_prop +
