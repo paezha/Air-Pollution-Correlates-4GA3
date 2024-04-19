@@ -1,5 +1,5 @@
 ---
-title: "Some Random Title Here"
+title: "Examining the relationship between socioeconomic variables and air pollution in Toronto"
 #subtitle: "A subtitle"
 thanks: "Paper submitted to complete the requirements of ENVSOCTY 4GA3 Applied Spatial Statistics; with additional edits by Antonio Paez for this version."
 author:
@@ -13,12 +13,12 @@ author:
   student_number: 400319161
 - name: Ifra Awan
   student_number: 400261667 
-- name: Oliver
-  student_number: 
+- name: Oliver Lawless
+  student_number: 400271127
 subject: "ENVSOCTY 4GA3"
 abstract: "abstract goes here; some extra spiel added here"
-keywords: "opioids, education, income, spatial analysis"
-date: "4/6/2020"
+keywords: "pollution, demographics, spatial analysis, transportation"
+date: "4/19/2024"
 output:
   pdf_document:
     # The project-template-default.tex file was minimally adapted from Steven V. Miller's template for academic manuscripts. See:
@@ -29,12 +29,18 @@ bibliography: [bibliography.bib, packages.bib]
 always_allow_html: true
 ---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE,
+                      message = FALSE)
+```
+
 # Introduction
 
-Words go here
+This study analyzes the correlations between emission-based air pollution and socioeconomic spatial phenomena within the City of Toronto. It examines the predominant air quality factors responsible for the emission of fine particulate matter (PM2.5). The aim of this study is to address variations in air pollution statistics throughout the city. Generally, air quality tends to be worse in areas of lower socioeconomic status (SES) where people are forced to live near major sources of contamination such as major roads and factories. This paper contains a literature review to set a foundation for the analysis. Using air quality data from several sensors, we interpolated fine particulate matter concentrations across Toronto. Then, using data collected from the Canadian census we performed a linear regression analysis to determine the correlation between the air pollution of an area and the socioeconomic factors. Next, the statistics were summarized and interpreted to determine which socioeconomic factors are the most correlated with poor air quality. Finally, the paper concludes with some recommendations for future correlation analysis and steps the City of Toronto should take to manage air pollution.
 
-More text for introduction
-Add more words. For a review of land use regression models see @hoek2008review.
+# Background
+
+
 
 ```{r}
 rm(list = ls())
@@ -55,12 +61,12 @@ library(tidyverse) # Easily Install and Load the 'Tidyverse'
 library(sf)
 library(cancensus) #retrieve Canadian Census Data
 library(geojsonsf)
-
 library(stars)
 library(readxl) # for importing data from excel
 library(Metrics) # for MSE function
 library(patchwork) # for plotting multiple ggplots together
-library(stringr)
+library(stringr) # for wrapping text in ggplot
+library(gridExtra)
 ```
 
 ```{r}
@@ -68,15 +74,6 @@ library(stringr)
  
 AQ_data <- read_excel('data/Air_Quality_Data.xlsx')
 colnames(AQ_data)[4] <- c("P")
-# 
-# AQ_data <- mutate(AQ_data,
-#                   X3 = X^3, X2Y = X^2 * Y, X2 = X^2,
-#                   XY = X * Y,
-#                   Y2 = Y^2, XY2 = X * Y^2, Y3 = Y^3)
-```
-
-```{r}
-summary(AQ_data)
 ```
 
 ```{r}
@@ -85,48 +82,13 @@ AQ_data.sf <- AQ_data |>
            remove = "FALSE") # Keep X and Y columns
 ```
 
-```{r}
-# function to determine the mean and sd of the prediction variance obtained with different kriging parameters
-# observations: sf object containing the points to be interpolated (in this case the air pollution readings)
-# polynomial terms need to have already been calculated
-# targets: points that are being interpolated to (in this case the centroids)
-# vgm_model: model of theoretical variogram (string)
-# trend: what to use for the trend surface (can be Linear, Quadratic, Cubic, or None)
-krig_pred_var <- function(observations, targets, vgm_model, trend = "None"){
-  
-  if(trend == "Linear"){
-    trend_model <- P ~ X + Y
-  } else if (trend == "Quadratic") {
-    trend_model <- P ~ X2 + X + XY + Y + Y2
-  } else if (trend == "Cubic") {
-    trend_model <- P ~ X3 + X2Y + X2 + X + XY + Y + Y2 + XY2 + Y3
-  } else {
-    trend_model <- P ~ 1
-  }
-  
-  variogram_v <- variogram(trend_model, 
-                           data = observations)
-  
-  variogram_v.t <- fit.variogram(variogram_v, model = vgm(vgm_model))
-  
-  V.kriged <- krige(trend_model,
-                    observations, 
-                    targets, 
-                    variogram_v.t)
-  krig.list <- list(V.kriged, mean(V.kriged$var1.var), sd(V.kriged$var1.var))
-  names(krig.list) <- c("Krig.output", "variance.mean", "variance.sd")
-  return(krig.list)
-}
-```
-
-```{r}
+```{r, warning = FALSE}
 # Making air quality variogram
 variogram_v <- variogram(P ~ 1, 
                            data = AQ_data.sf)
 
 # Create best-fitting theoretical curve
 variogram_v.t <- fit.variogram(variogram_v, model = vgm("Exp", "Sph", "Gau"))
-variogram_v.t
 
 gamma.t <- variogramLine(variogram_v.t, maxdist = 0.5)
 
@@ -162,21 +124,8 @@ cancensus::set_cancensus_cache_path(paste0(getwd(), "/data"),install = TRUE, ove
 
 
 ```{r}
-#Getting median household income from cancensus:
+# retrieving demographic data from cansensus for Toronto, at the dissemination area level
 
-# census tract level (Toronto CSD)
-# torontoCTs.demographics.sf <- get_census(dataset='CA21', regions=list(CSD="3520005"),
-#                          vectors=c("median_hh_income"="v_CA21_906",
-#                                    "population_density" = "v_CA21_6",
-#                                    "median_age" = "v_CA21_389",
-#                                    "public_transit" = "v_CA21_7644",
-#                                    "automobile" = "v_CA21_7635",
-#                                    "walking" = "v_CA21_7647",
-#                                    "cycling" = "v_CA21_7650"), 
-#                          level='CT', quiet = TRUE, 
-#                          geo_format = 'sf', labels = 'short')
-
-# dissemination area level (Toronto CSD)
 torontoDAs.demographics.sf <- get_census(dataset='CA21', regions=list(CSD="3520005"),
                          vectors=c("median_hh_income"="v_CA21_906",
                                    "pop21" = "v_CA21_1",
@@ -194,11 +143,9 @@ torontoDAs.demographics.sf <- get_census(dataset='CA21', regions=list(CSD="35200
 ```
 
 
-```{r echo = FALSE}
-#Projecting:
+```{r include = FALSE}
+#Projecting first the Toronto shapefile, then using the same crs to project the air quality data:
 st_transform(torontoDAs.demographics.sf, 32617)
-#st_transform(torontoDAs.demographics.sf, 4269)
-#st_crs(torontoCTs.demographics.sf) <- st_crs(torontoDAs.demographics.sf)
 st_crs(AQ_data.sf) <- st_crs(torontoDAs.demographics.sf)
 ```
 
@@ -214,25 +161,12 @@ AQ_data.sf <- AQ_data.sf |>
 
 
 ```{r}
-ggplot(torontoDAs.demographics.sf) + geom_sf() + geom_sf(data = AQ_data.sf, aes(size = P))
+ggplot(torontoDAs.demographics.sf) + geom_sf() + geom_sf(data = AQ_data.sf, aes(size = P)) + labs(size = "Particulate Matter reading")
 ```
-
 
 ```{r}
 # generating centroids
 torontoDAs.centroids <- st_centroid(torontoDAs.demographics.sf)
-#torontoCTs.centroids <- st_centroid(torontoCTs.demographics.sf)
-```
-
-```{r}
-# Extract coordinates as separate 'X' and 'Y' columns
-torontoDAs.centroids <- torontoDAs.centroids |>
-  mutate(X = unlist(map(torontoDAs.centroids$geometry, 1)), 
-         Y = unlist(map(torontoDAs.centroids$geometry, 2))) |>
-  # Add polynomials
-  mutate(X3 = X^3, X2Y = X^2 * Y, X2 = X^2,
-         XY = X * Y, 
-         Y2 = Y^2, XY2 = X * Y^2, Y3 = Y^3)
 ```
 
 
@@ -260,14 +194,6 @@ AQ.owin <- as.owin(AQ.bbox)
 
 # We can create a `ppp` object with the coordinates of the points
 AQ_data.ppp <- as.ppp(X = AQ_data[,2:4], W = AQ.owin)
-```
-
-```{r}
-summary(AQ_data.ppp)
-
-
-plot(AQ_data.ppp)
-
 ```
 
 Here we use Leave One Out cross validation to determine the optimal power: https://www.statology.org/leave-one-out-cross-validation/
@@ -313,15 +239,9 @@ ggplot(P.idw.sf) + geom_sf(aes(colour = P)) + geom_sf(data = torontoDAs.demograp
 # use spatial join to add the PM25 value of the nearest pixel to each centroid
 toDAs.idw <- st_join(torontoDAs.centroids, P.idw.sf, join = st_nearest_feature)
 
-#ggplot(toDAs.idw) + geom_sf(aes(colour = P))
-
 toDAs.idw.poly <- mutate(torontoDAs.demographics.sf, P = toDAs.idw$P)
 toDAs.NAomit <- na.omit(toDAs.idw.poly)
-ggplot(toDAs.idw.poly) + geom_sf(aes(fill = P), colour = NA) + labs(fill = "interpolated Particulate Matter value") + scale_fill_viridis_c(option = "magma")
-
-# toCTs.idw <- na.omit(st_join(torontoCTs.demographics.sf, P.idw.sf, join = st_intersects))
-# 
-# ggplot(toCTs.idw) + geom_sf(aes(fill = P), colour = NA)
+ggplot(toDAs.idw.poly) + geom_sf(aes(fill = P), colour = NA) + labs(title = "Interpolated Particulate Matter Readings", fill = "Interpolated Particulate Matter value") + scale_fill_viridis_c(option = "magma")
 ```
 
 
@@ -349,7 +269,7 @@ ggplot(toDAs.idw.poly) + geom_sf(aes(fill = P), colour = NA) + labs(fill = "inte
 ```
 
 ```{r}
-
+# function for generating chloropleth maps
 chloropleth.plot <- function(var, var.name){
   ggplot(data = toDAs.idw.poly) +
   geom_sf(aes(fill = var), colour = NA) + 
@@ -376,29 +296,27 @@ cycling.chl <- chloropleth.plot(toDAs.idw.poly$cycling/toDAs.idw.poly$pop21, "Pr
   (walking.chl | cycling.chl)
 ```
 
-
 ```{r}
-torontoDAs.nb <- poly2nb(pl = toDAs.idw.poly, queen = TRUE)
-torontoDAs.w <- nb2listw(torontoDAs.nb, zero.policy = TRUE)
-
-torontoDAsna.nb <- poly2nb(pl = toDAs.NAomit, queen = TRUE)
-torontoDAsna.w <- nb2listw(torontoDAsna.nb, zero.policy = TRUE)
-
-# torontoCTs.nb <- poly2nb(pl = toCTs.idw)
-# torontoCTs.w <- nb2listw(torontoCTs.nb)
-# 
-# torontoCTs.nb.k <- poly2nb(pl = toCT.kpoints)
-# torontoCTs.k.w <- nb2listw(torontoCTs.nb.k, zero.policy = TRUE)
+grid.arrange(pop_den.chl, minority.chl, med_inc.chl, med_age.chl, nrow = 2)
 ```
 
 
 
 ```{r}
+torontoDAsna.nb <- poly2nb(pl = toDAs.NAomit, queen = TRUE)
+torontoDAsna.w <- nb2listw(torontoDAsna.nb, zero.policy = TRUE)
+```
+
+
+
+```{r}
+# function for returning moran's I and p value
 moran.test.sum <- function(var){
   m <- moran.test(var, torontoDAsna.w)
   return(c("I" = m$estimate[1], "p.val" = m$p.value))
 }
 ```
+
 ```{r}
 moran.vec <- c("Population density", moran.test.sum(toDAs.NAomit$population_density),
                "Median household income", moran.test.sum(toDAs.NAomit$median_hh_income),
@@ -471,6 +389,8 @@ toDAs.NAomit$walking_prop <- toDAs.NAomit$walking/toDAs.NAomit$pop21
 toDAs.NAomit$cycling_prop <- toDAs.NAomit$cycling/toDAs.NAomit$pop21
 ```
 
+To further investigate the relative importance of each covariate, linear regression was performed using all eight covariates. It is also possible that this might result in a better fit than models involving only single covariates.
+
 ```{r}
 lm.all_vars <- lm(formula = P ~ population_density + 
                     minority_proportion + 
@@ -486,6 +406,28 @@ lm.all_vars <- lm(formula = P ~ population_density +
 ```{r}
 summary(lm.all_vars)
 ```
+
+```{r}
+# finding best predictors
+
+lm.best_vars <- lm(formula = P ~ minority_proportion + 
+                    median_age +
+                    automobile_prop +
+                    walking_prop +
+                    cycling_prop,
+                   data = toDAs.NAomit)
+
+summary(lm.best_vars)
+```
+Despite using only the covariates with the lowest p-value, the Adjusted R-squared value decreases slightly and the residual standard error increases. This indicates that reducing the number of variables in the model does not in fact improve the fit. Therefore, for general prediction it might be best to use all 8 of the selected variables. 
+
+```{r}
+toDAs.res <- mutate(toDAs.NAomit, "res" = lm.all_vars$residuals)
+toDAs.res.sign <- toDAs.res$res > 0 
+
+ggplot(toDAs.res) + geom_sf(aes(fill = toDAs.res.sign))
+```
+
 
 
 Words
