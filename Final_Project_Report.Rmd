@@ -1,7 +1,7 @@
 ---
-title: "Examining the relationship between socioeconomic variables and air pollution in Toronto"
+title: "Examining the Relationships Between Socioeconomic Variables and Particulate Air Pollution in the Toronto Metropolitan Area"
 #subtitle: "A subtitle"
-thanks: "Paper submitted to complete the requirements of ENVSOCTY 4GA3 Applied Spatial Statistics; with additional edits by Antonio Paez for this version."
+thanks: "Paper submitted to complete the requirements of ENVSOCTY 4GA3 Applied Spatial Statistics. With thanks to Dr Antonio Páez for his guidance with this project."
 author:
 - name: Farah Chin
   student_number: 400229991
@@ -16,39 +16,59 @@ author:
 - name: Oliver Lawless
   student_number: 400271127
 subject: "ENVSOCTY 4GA3"
-abstract: "abstract goes here; some extra spiel added here"
-keywords: "pollution, demographics, spatial analysis, transportation"
+abstract: "This study analyzes the air quality (specifically the levels of particulate matter (PM 2.5)) in the city of Toronto, Canada and how it relates to socioeconomic demographic data. Demographic data was obtained through the cancensus R package and air quality data was retrieved from open source air quality monitoring devices. It was found that the proportion of visible minorities, the median age of residents, and the proportion of commuters by automobile have a positive correlation with high PM 2.5. On the other hand, the proportion of commuters walking and cycling are negatively linked to PM 2.5."
+keywords: "pollution, demographics, spatial analysis, transportation, socioeconomic status, GIS"
 date: "4/19/2024"
+
+header-includes:
+- \usepackage{float} #use the 'float' package
+- \floatplacement{figure}{H} #make every figure with caption = h
+
 output:
   pdf_document:
     # The project-template-default.tex file was minimally adapted from Steven V. Miller's template for academic manuscripts. See:
     # http://svmiller.com/blog/2016/02/svm-r-markdown-manuscript/
     # https://github.com/svmiller/svm-r-markdown-templates/blob/master/svm-latex-ms.tex
     template: project-template-default.tex
-bibliography: [bibliography.bib, packages.bib]
+bibliography: air_quality.bib
 always_allow_html: true
 ---
 
+---
+nocite: '@*'
+---
+
+
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE,
-                      message = FALSE)
+                      message = FALSE,
+                      warning = FALSE)
 ```
 
 # Introduction
 
-This study analyzes the correlations between emission-based air pollution and socioeconomic spatial phenomena within the City of Toronto. It examines the predominant air quality factors responsible for the emission of fine particulate matter (PM2.5). The aim of this study is to address variations in air pollution statistics throughout the city. Generally, air quality tends to be worse in areas of lower socioeconomic status (SES) where people are forced to live near major sources of contamination such as major roads and factories. This paper contains a literature review to set a foundation for the analysis. Using air quality data from several sensors, we interpolated fine particulate matter concentrations across Toronto. Then, using data collected from the Canadian census we performed a linear regression analysis to determine the correlation between the air pollution of an area and the socioeconomic factors. Next, the statistics were summarized and interpreted to determine which socioeconomic factors are the most correlated with poor air quality. Finally, the paper concludes with some recommendations for future correlation analysis and steps the City of Toronto should take to manage air pollution.
+The aim of this study is to analyze the relationships between particulate air pollution and various socio-economic variables in the city of Toronto, and to determine which of those variables have the most significant effect on air quality. It examines the predominant air quality factors responsible for the emission of fine particulate matter (PM2.5). Generally, air quality tends to be worse in areas of lower socioeconomic status (SES) where people are forced to live near major sources of contamination such as major roads and factories. Through concrete analysis of these relationships, it is hoped that strategies to improve air quality in Toronto can be informed and motivated, especially in the case of certain demographic groups being disproportinately affected.
+
+This paper contains a literature review to set a foundation for the analysis. Using air quality data from several sensors, we interpolated fine particulate matter concentrations across Toronto. Then, using data collected from the Canadian census we performed a linear regression analysis to determine the correlation between the air pollution statistics and demographic factors such as socioeconomic status. Next, the statistics were summarized and interpreted to determine which demographic factors are the most correlated with poor air quality. Finally, the paper concludes with recommendations for future correlation analysis and steps to be taken by the City of Toronto in order to manage the negative effects of air pollution.
 
 # Background
 
+Climate change is one of the principal concerns for society in the 21st century. Its main driver is the release of greenhouse gasses (GHGs) altering climate functions which cause a warming of the average global temperature, rising sea levels, increased precipitation intensity, and droughts (Sanderson, 2013). GHGs also have adverse impacts on human health, and tend to be emitted from urban areas with higher and denser population distribution (Sanderson, 2013). The most damaging GHGs consist of carbon monoxide (CO2), nitrous oxide (N2O) and halocarbons which are complex molecules responsible for the depletion of ozone (O3) within Earth’s atmosphere (Sanderson, 2013).  
 
+Though urban areas are typically thought to be the main contributors to GHG emissions, the major factor correlated with emissions is GDP (gross domestic product) per capita (Hoornweg et al., 2020). On average, less wealthy urban populations tend to produce less emissions when compared to wealthier suburban populations of higher socioeconomic class (Hoornweg et al., 2020). The primary sources of GHG emissions are heating in buildings, emissions from vehicles, and waste production (Mohareb and Kennedy, 2012). With increasing population and GDP, technologies relying on fossil fuels become more readily used, further contributing to the worsening air quality (Mohareb and Kennedy, 2012). This is why suburban areas tend to produce more GHGs per capita. The Greater Toronto and Hamilton Area (GTHA) is responsible for a large proportion of Canadian emissions. According to a report by Shekarrizfard and Sotes (2021), 44% of carbon emissions in Ontario come from the GTHA wherein some sectors disproportionately produce more GHGs than others. In 2019, buildings accounted for 44.6% of emissions, transportation accounted for 35%, and industrial activities accounted for 19% (Shekarrizfard and Sotes, 2021). Due to the importance of Toronto as one of Canada’s most important economic and cultural centers and the fact that it is responsible for a significant amount of emissions, this paper will focus on it as a study area.
 
-```{r}
+Due to the interconnectedness of anthropogenic processes and air pollution, the impacts of climate change in a local area can be observed through analysis of air quality data in the region. This is because many of the sources of air pollution also emit high levels of CO2 (World Health Organization, n.d.). Sources of electricity generation using fossil fuels produce both particulate matter (PM2.5) and CO2. Short-lived climate pollutants (SLCPs) like methane and black carbon can also be found within fine particulate matter, further contributing to, and often carrying a greater potential for climate change acceleration than that of CO2 (World Health Organization, n.d.). Like GHGs, air pollutants are also a threat to public health (Muñoz-Pizza et al., 2020). For example, fine particulate matter (PM2.5) has been linked to three million deaths annually from non communicable diseases (Muñoz-Pizza et al., 2020). 
+
+Furthermore, research has shown that there are disparities in air quality in low socioeconomic status communities versus high socioeconomic status communities. According to a review article by Hajat et al. (2016), most studies conducted in North America have shown that areas resided by low SES communities contain higher concentrations of air pollutants. A study done by Rentschler and Leonova (2023) also found that in 2021, 80% of the 7.3 billion people exposed to unsafe concentrations of PM2.5 lived in low- and middle-income countries. On top of the higher exposure to air pollutants, low SES communities also experience increased health risks related to air pollutants as a result of more psychosocial stressors, like chronic stress, and reduced access to healthcare (Hajat et al., 2016). Studies have hypothesized that this disparity may result from low SES communities having limited political influence compared to high SES communities, which results in the inability to stop locally unwanted land uses (LULU), like industrial plants and transport corridors, from being constructed in their communities (Hajat et al., 2016). Low SES communities have lower social capital which makes it more difficult to launch a campaign against the construction of LULUs in the community (Hajat et al., 2016). Furthermore, many low paying jobs require physical and outdoor labor which can lead to increased exposure to air pollutants (Rentschler & Leonova, 2023).
+
+It is important to understand where emissions are concentrated at both regional and local scales (Asdrubali et al. 2013). Geographic information system (GIS) based tools have been used to analyze the spatial distribution of GHG emissions from different sectors. For example, in Italy, GHG emission maps were used by Asdrubali et al. (2013) to help the city of Spoleto control and reduce their air pollution. This study used land-use data to estimate the emissions of the city based on classification of land-use done via remote sensing. This technique is one way of looking at the relationship between air pollutants and urban land use. There are also techniques used in GIS to transform point data into a continuous field of data through interpolation. This is great when you have air quality sensors around the field of study as this technique has been used successfully in previous research (Kumar et al. 2016, Kumar et al. 2022). Interpolation techniques have had varying degrees of success at predicting air pollutants due to the nature of each technique (Kumar et al. 2022). Inverse distance weighting (IDW) has proven accurate when estimating greenhouse gas emissions such as CO2 and N2O while kriging techniques have been better at estimating suspended particulate matter (Kumar et al. 2022). Additionally, previous research has used interpolation of air quality to estimate the adverse health effects on populations by incorporating demographic data (Kumar et al. 2016). 
+
+```{r rmlist}
 rm(list = ls())
 ```
 
-# Data
-
-```{r message = FALSE, warning = FALSE}
+```{r libraries}
 # Load libraries for interpolation (might not need all of them)
 library(deldir) # Delaunay Triangulation and Dirichlet (Voronoi) Tessellation
 library(isdas) # Companion Package for Book An Introduction to Spatial Data Analysis and Statistics
@@ -68,22 +88,133 @@ library(patchwork) # for plotting multiple ggplots together
 library(stringr) # for wrapping text in ggplot
 library(gridExtra)
 library(knitr)
+library(float)
 ```
 
-```{r}
+```{r load_aq}
 # Load the air quality data
  
 AQ_data <- read_excel('data/Air_Quality_Data.xlsx')
 colnames(AQ_data)[4] <- c("P")
 ```
 
-```{r}
+```{r aq_to_sf}
 AQ_data.sf <- AQ_data |> 
   st_as_sf(coords = c("Lon", "Lat"), 
            remove = "FALSE") # Keep X and Y columns
 ```
 
-```{r, warning = FALSE}
+```{r set_cache, include = FALSE}
+cancensus::set_cancensus_cache_path(paste0(getwd(), "/data"),install = TRUE, overwrite = TRUE)
+```
+
+
+```{r demographics}
+# retrieving demographic data from cansensus for Toronto, at the dissemination area level
+
+torontoDAs.demographics.sf <- get_census(dataset='CA21', regions=list(CSD="3520005"),
+                         vectors=c("median_hh_income"="v_CA21_906",
+                                   "pop21" = "v_CA21_1",
+                                   "population_density" = "v_CA21_6",
+                                   "median_age" = "v_CA21_389",
+                                   "public_transit" = "v_CA21_7644",
+                                   "automobile" = "v_CA21_7635",
+                                   "walking" = "v_CA21_7647",
+                                   "cycling" = "v_CA21_7650",
+                                   "minority_population" = "v_CA21_4875",
+                                   "dwellings" = "v_CA21_434",
+                                   "bachelors" = "v_CA21_5847"), 
+                         level='DA', quiet = TRUE, 
+                         geo_format = 'sf', labels = 'short')
+```
+
+
+```{r projections, include = FALSE}
+#Projecting first the Toronto shapefile, then using the same crs to project the air quality data:
+st_transform(torontoDAs.demographics.sf, 32617)
+st_crs(AQ_data.sf) <- st_crs(torontoDAs.demographics.sf)
+```
+
+```{r add_xy}
+AQ_data.sf <- AQ_data.sf |>
+  mutate(X = unlist(map(AQ_data.sf$geometry, 1)), 
+         Y = unlist(map(AQ_data.sf$geometry, 2))) |>
+  # Add polynomials
+  mutate(X3 = X^3, X2Y = X^2 * Y, X2 = X^2,
+         XY = X * Y, 
+         Y2 = Y^2, XY2 = X * Y^2, Y3 = Y^3)
+```
+# Data and Methods
+
+## Study Area
+
+The analyses performed in this study are focused on the Toronto Metropolitan Area. This was chosen due to its nature as an urban center, as well as the high density of air quality observation points near and around the region, improving the chances of an accurate interpolation.
+
+## Air Quality Data
+
+The Air Quality map from the University of Northern British Columbia (AQmap, n.d.), provides particulate matter (referred to as PM 2.5) observations for Canada. The map updates values of PM 2.5 on an hourly basis. The latitude and longitude values for each data point in Toronto, and a few outside of the region to reduce edge effects, were obtained. The analysis was done for data between the 2-week time period starting from March 8 at 8PM to March 21 at 8PM. The name of locations in Toronto, and their coordinate points were put into an excel file to be used for analysis. Along with longitude and latitude values, the PM 2.5 average values were calculated and added into the excel file. To get the average PM 2.5 values for each data point, the CSV file was downloaded from the plot time series, which provided values for PM 2.5 within the specified time range. Each CSV file provided the time and PM 2.5 value and from this the mean PM 2.5 value was calculated for analysis. This final data was then imported to R as a dataframe, and converted to a sf object.
+
+## Demographic data
+
+The Canadian Census is carried out every five years, and covers multiple categories of demographic data at varying scales, from dissemination areas to census metropolitan areas and larger. To access census data, the R package *cancensus* was utilized in order to retrieve the data directly as a sf object for further analysis. Data was imported at the Dissemination Area level, which was the smallest level available for the 2021 census, in order to both generate a sufficient set of data for analysis, as well as to ensure that any small-scale patterns are not lost through aggregation. The census variables retrieved were population density, median household income, median age, and the number of people belonging to a visible minority. Additionally, in order to investigate the effect of commute choice on pollution, the numbers of people who commute using automobiles, public transit, walking and cycling were retrieved.
+
+In order to perform accurate analyses on the data from the two different sources, it was imperative that they be projected to the same coordinate system. The functions and st_crs were used to project the sf object containing the PM 2.5 observations and the one containing the dissemination area polygons to WGS84 UTM Zone17N, which is ideal for data in Toronto. Figure \ref{fig:DAs_observations} shows the locations of PM 2.5 observations overlaid on a map of Toronto's dissemination areas.
+
+```{r plot_points, fig.cap = {"\\label{fig:DAs_observations}Dissemination areas within the Toronto metropolitan area (polygons) and locations of PM 2.5 observations (points)"}}
+ggplot(torontoDAs.demographics.sf) + geom_sf() + geom_sf(data = AQ_data.sf, aes(size = P)) + labs(size = "Particulate Matter reading")
+```
+
+```{r centroids}
+# generating centroids
+torontoDAs.centroids <- st_centroid(torontoDAs.demographics.sf)
+```
+
+
+```{r make_ppp}
+## IDW
+
+to.bbox <- st_bbox(torontoDAs.demographics.sf)
+
+# Get minimum and maximum values for aquifer data
+min.X <- min(min(AQ_data$Lon), to.bbox$xmin)
+min.Y <- min(min(AQ_data$Lat), to.bbox$ymin)
+max.X <- max(max(AQ_data$Lon), to.bbox$xmax)
+max.Y <- max(max(AQ_data$Lat), to.bbox$ymax)
+x.range <- max.X - min.X
+y.range <- max.Y - min.Y
+
+# Define region of interest
+AQ.bbox <- st_polygon(list(rbind(c(min.X, min.Y),
+                                c(max.X, min.Y),
+                                c(max.X, max.Y),
+                                c(min.X, max.Y),
+                                c(min.X, min.Y))))
+
+AQ.owin <- as.owin(AQ.bbox)
+
+# We can create a `ppp` object with the coordinates of the points
+AQ_data.ppp <- as.ppp(X = AQ_data[,2:4], W = AQ.owin)
+```
+
+```{r cross_val}
+# CROSS VALIDATION
+
+powers <- seq(0.001, 10, 0.01)
+mse_result <- NULL
+for(power in powers){
+  P_idw <- idw(AQ_data.ppp, power=power, at="points")
+  mse_result <- c(mse_result,
+                  Metrics::mse(AQ_data.ppp$marks,P_idw))
+}
+optimal_power <- powers[which.min(mse_result)]
+#optimal_power
+```
+
+## Interpolation
+
+Air quality readings were taken at discrete points, where monitoring stations exist. This, however, does not render it eligible for point pattern data analysis, since the element of randomness involved is not in the location of the stations, but rather the observations taken there. Therefore, in order to obtain a measure of air quality for each dissemination area, the observations were interpolated to generate a spatially continuous field. Initially, kriging was the planned interpolation method, in order to gain a more accurate surface as well as a measure of the interpolation error. However, analysis of the observations’ semivariogram showed that it did not fit well with any of the theoretical variogram models, so kriging was not effective. 
+
+```{r variogram, fig.cap = {"\\label{fig:semivariogram}Emperical semivariogram of the PM 2.5 observations, and the best fitting theoretical variogram model"}}
 # Making air quality variogram
 variogram_v <- variogram(P ~ 1, 
                            data = AQ_data.sf)
@@ -111,119 +242,21 @@ ggplot(data = variogram_v,
   ylab("Semivariance") 
 ```
 
+Tile based methods of interpolation, i.e. inverse distance weighting (IDW) and k-point means, were then considered. IDW was selected over k-point means, as it was found to result in a smoother, more continuous surface. Additionally, since the pattern of observations is not regular, IDW better accounted for distance effects.
 
-## Toronto Census Data 
+For IDW, the selection of the power, $\gamma$, was an important modelling decision, as it controls the strength of the distance decay effect. In order to select the optimal $\gamma$, Leave One Out Cross Validation was utilized. This involved performing an interpolation at each observation point using all the other observations, and finding the mean square error over all these interpolated values. The value of $\gamma$ which resulted in the lowest MSE turned out to be 0.471, and the MSE was 43.83662. This value can be used as an estimate of the interpolation error, although it is of course not as substantial as what would have been obtained with kriging.
 
-Go to https://mountainmath.github.io/cancensus/index.html and follow instructions for setting up CensusMapping account and generating API key to retrieve data.
+The function *idw* from the *spatstat* package was utilized to interpolate the data, which required the sf object of observations to be converted to a ppp object. 
 
-More info: https://mountainmath.github.io/cancensus/articles/cancensus.html
-
-Set your cache to the data folder:
-```{r}
-cancensus::set_cancensus_cache_path(paste0(getwd(), "/data"),install = TRUE, overwrite = TRUE)
-```
-
-
-```{r}
-# retrieving demographic data from cansensus for Toronto, at the dissemination area level
-
-torontoDAs.demographics.sf <- get_census(dataset='CA21', regions=list(CSD="3520005"),
-                         vectors=c("median_hh_income"="v_CA21_906",
-                                   "pop21" = "v_CA21_1",
-                                   "population_density" = "v_CA21_6",
-                                   "median_age" = "v_CA21_389",
-                                   "public_transit" = "v_CA21_7644",
-                                   "automobile" = "v_CA21_7635",
-                                   "walking" = "v_CA21_7647",
-                                   "cycling" = "v_CA21_7650",
-                                   "minority_population" = "v_CA21_4875",
-                                   "dwellings" = "v_CA21_434",
-                                   "bachelors" = "v_CA21_5847"), 
-                         level='DA', quiet = TRUE, 
-                         geo_format = 'sf', labels = 'short')
-```
-
-
-```{r include = FALSE}
-#Projecting first the Toronto shapefile, then using the same crs to project the air quality data:
-st_transform(torontoDAs.demographics.sf, 32617)
-st_crs(AQ_data.sf) <- st_crs(torontoDAs.demographics.sf)
-```
-
-```{r}
-AQ_data.sf <- AQ_data.sf |>
-  mutate(X = unlist(map(AQ_data.sf$geometry, 1)), 
-         Y = unlist(map(AQ_data.sf$geometry, 2))) |>
-  # Add polynomials
-  mutate(X3 = X^3, X2Y = X^2 * Y, X2 = X^2,
-         XY = X * Y, 
-         Y2 = Y^2, XY2 = X * Y^2, Y3 = Y^3)
-```
-
-
-```{r}
-ggplot(torontoDAs.demographics.sf) + geom_sf() + geom_sf(data = AQ_data.sf, aes(size = P)) + labs(size = "Particulate Matter reading")
-```
-
-```{r}
-# generating centroids
-torontoDAs.centroids <- st_centroid(torontoDAs.demographics.sf)
-```
-
-
-```{r}
-## IDW
-
-to.bbox <- st_bbox(torontoDAs.demographics.sf)
-
-# Get minimum and maximum values for aquifer data
-min.X <- min(min(AQ_data$Lon), to.bbox$xmin)
-min.Y <- min(min(AQ_data$Lat), to.bbox$ymin)
-max.X <- max(max(AQ_data$Lon), to.bbox$xmax)
-max.Y <- max(max(AQ_data$Lat), to.bbox$ymax)
-x.range <- max.X - min.X
-y.range <- max.Y - min.Y
-
-# Define region of interest
-AQ.bbox <- st_polygon(list(rbind(c(min.X, min.Y),
-                                c(max.X, min.Y),
-                                c(max.X, max.Y),
-                                c(min.X, max.Y),
-                                c(min.X, min.Y))))
-
-AQ.owin <- as.owin(AQ.bbox)
-
-# We can create a `ppp` object with the coordinates of the points
-AQ_data.ppp <- as.ppp(X = AQ_data[,2:4], W = AQ.owin)
-```
-
-Here we use Leave One Out cross validation to determine the optimal power: https://www.statology.org/leave-one-out-cross-validation/
-
-See also:
-https://rpubs.com/Dr_Gurpreet/interpolation_idw_R
-
-```{r}
-# CROSS VALIDATION
-
-powers <- seq(0.001, 10, 0.01)
-mse_result <- NULL
-for(power in powers){
-  P_idw <- idw(AQ_data.ppp, power=power, at="points")
-  mse_result <- c(mse_result,
-                  Metrics::mse(AQ_data.ppp$marks,P_idw))
-}
-optimal_power <- powers[which.min(mse_result)]
-optimal_power
-```
-
-```{r}
-P.idw_points <- idw(AQ_data.ppp, power = 0.471, at = "points")
+```{r idw, fig.cap = {"\\label{fig:IDWfield}Continuous field resulting from IDW interpolation of PM 2.5 observations"}}
+#P.idw_points <- idw(AQ_data.ppp, power = 0.471, at = "points")
 P.idw_pixels <- idw(AQ_data.ppp, power = 0.471)
 plot(P.idw_pixels, col=heat.colors(64))
 #Metrics::mse(AQ_data.ppp$marks, z_p.idw1)
 ```
 
-```{r}
+
+```{r idw_df}
 # converting im object to a df
 z.vec <- c(P.idw_pixels$v)
 Y.vec <- rep(P.idw_pixels$yrow, 128)
@@ -231,45 +264,32 @@ X.vec <- rep(P.idw_pixels$xcol, each = 128)
 P.idw.df <- data.frame("X" = X.vec, "Y" = Y.vec, "P" = z.vec)
 P.idw.sf <- st_as_sf(P.idw.df, coords = c("X", "Y"))
 st_crs(P.idw.sf) <- st_crs(torontoDAs.demographics.sf)
-
-
-ggplot(P.idw.sf) + geom_sf(aes(colour = P)) + geom_sf(data = torontoDAs.demographics.sf)
 ```
 
-```{r}
+The output of *idw* was in the form of an *im* object, which is essentially a pixel image. This was converted to a sf object to be cohesive with the census data. In order to perform subsequent analyses, it was necessary to join the interpolated PM 2.5 values to the dissemination areas. This was done with the *st_join* function using the join type *st_contains*, between the centroids of the dissemination areas and the sf object of the interpolated field. Essentially, each centroid was assigned the PM 2.5 value of the closest 'pixel' in the interpolation field. These values were then added to the dissemination areas polygon object.
+
+```{r spat_join, fig.cap={"\\label{fig:DAs_idw}Dissemination areas in Toronto coloured according to their joined PM 2.5 value"}}
 # use spatial join to add the PM25 value of the nearest pixel to each centroid
 toDAs.idw <- st_join(torontoDAs.centroids, P.idw.sf, join = st_nearest_feature)
 
 toDAs.idw.poly <- mutate(torontoDAs.demographics.sf, P = toDAs.idw$P)
 toDAs.NAomit <- na.omit(toDAs.idw.poly)
-ggplot(toDAs.idw.poly) + geom_sf(aes(fill = P), colour = NA) + labs(title = "Interpolated Particulate Matter Readings", fill = "Interpolated Particulate Matter value") + scale_fill_viridis_c(option = "magma")
+ggplot(toDAs.idw.poly) + geom_sf(aes(fill = P), colour = NA) + labs(title = "Dissemination areas in Toronto coloured according to their joined PM 2.5 value",
+fill = "PM 2.5") + scale_fill_viridis_c(option = "magma")
 ```
+With the air quality data interpolated, and a PM 2.5 value obtained for each dissemination area, further exploration and analysis could now be carried out.
 
+# Analysis
 
-```{r message = FALSE}
-# k.vals <- seq(1, 32)
-# mse_result <- c()
-# for(k in k.vals){
-#   se.vec <- c()
-#   for (i in 1:nrow(AQ_data.sf)){
-#     train.sf <- AQ_data.sf[-i,]
-#     test.sf <- AQ_data.sf[i, -4]
-#     kpoint.k <- kpointmean(source_xy = train.sf,
-#                        target_xy = test.sf,
-#                        z = P,
-#                        k = k)
-# 
-#     se.vec <- c(se.vec, (AQ_data.sf[i,]$P - kpoint.k$z)^2)
-# 
-#   }
-#   mse <- mean(se.vec)
-#   mse_result <- c(mse_result, mse)
-# }
-# optimal_k <- k.vals[which.min(mse_result)]
-# optimal_k
-```
+## Exploratory analyses
 
-```{r}
+Firstly, exploratory analyses were conducted to gain a sense for overarching patterns in the data. 
+
+### Chloropleth Maps
+
+One approach to explore the data was to construct chloropleth maps for each covariate under investigation. Chloropleth maps allow for spatial trends in the data to be easily identified visually. Variables of count data, such as the number of people commuting by a particular method, were standardized in order to account for population differences between dissemination areas.
+
+```{r chl_func}
 # function for generating chloropleth maps
 chloropleth.plot <- function(var, var.name){
   ggplot(data = toDAs.idw.poly) +
@@ -278,7 +298,7 @@ chloropleth.plot <- function(var, var.name){
 }
 ```
 
-```{r}
+```{r chl_calls}
 pop_den.chl <- chloropleth.plot(toDAs.idw.poly$pop21/toDAs.idw.poly$`Area (sq km)`, "Population density")
 minority.chl <- chloropleth.plot(toDAs.idw.poly$minority_population/toDAs.idw.poly$pop21, "Proportion visible minority")
 med_inc.chl <- chloropleth.plot(toDAs.idw.poly$median_hh_income, "Median household income")
@@ -289,21 +309,24 @@ walking.chl <- chloropleth.plot(toDAs.idw.poly$walking/toDAs.idw.poly$pop21, "Pr
 cycling.chl <- chloropleth.plot(toDAs.idw.poly$cycling/toDAs.idw.poly$pop21, "Proportion commuting via cycling")
 ```
 
-```{r}
-(pop_den.chl | minority.chl) /
-  (med_inc.chl | med_age.chl)
-
-(automobile.chl | public_transit.chl) /
-  (walking.chl | cycling.chl)
-```
-
-```{r}
+```{r chl_plots_demographic, fig.cap={"\\label{fig:chl_demos}Chloropleth maps showing socioeconomic variables at the dissemination area level"}}
 grid.arrange(pop_den.chl, minority.chl, med_inc.chl, med_age.chl, nrow = 2)
 ```
 
 
+```{r chl_plots_commute, fig.cap={"\\label{fig:chl_demos}Chloropleth maps showing commuting-related variables at the dissemination area level"}}
 
-```{r}
+grid.arrange(automobile.chl, public_transit.chl, walking.chl, cycling.chl, nrow = 2)
+```
+The above choropleth maps show that the northern parts of Toronto have lower median household incomes. Meanwhile, these areas also have higher proportions of visible minority populations. Dissemination areas with a high proportion of people who walk or cycle are noticeably concentrated in the downtown area, indicating that there is more walkable and cyclist-friendly infrastructure in these areas. On the other hand, dissemination areas with a high proportion of automobile users tend to be found near the edges of the city.
+
+### Moran's I
+
+One other important descriptive statistic for inferring spatial patterns in data is Moran's I. It gives an estimate of the spatial autocorrelation of a variable; that is, the presence of systematic spatial variation, or whether or not the value of the variable at an area is affected by the area's location. 
+
+Using the function *moran.test* from the *spdep* package allows for a hypothesis test of spatial autocorrelation to be conducted. Conducting this test for the interpolated PM 2.5 data results in a p-value of less than $2.2 \times 10^{-16}$, so the hypothesis of spatial independence of can be rejected. However, this does not convey much new information, since IDW as an interpolation process relies on spatial dependence.
+
+```{r spat_weights}
 torontoDAs.nb <- poly2nb(pl = toDAs.idw.poly, queen = TRUE)
 torontoDAs.w <- nb2listw(torontoDAs.nb, zero.policy = TRUE)
 
@@ -311,12 +334,7 @@ torontoDAsna.nb <- poly2nb(pl = toDAs.NAomit, queen = TRUE)
 torontoDAsna.w <- nb2listw(torontoDAsna.nb, zero.policy = TRUE)
 ```
 
-```{r}
-moran.test(toDAs.idw.poly$P, torontoDAs.w)
-```
-
-
-```{r}
+```{r moran_func}
 # function for returning moran's I and p value
 moran.test.sum <- function(var){
   m <- moran.test(var, torontoDAsna.w)
@@ -324,7 +342,9 @@ moran.test.sum <- function(var){
 }
 ```
 
-```{r}
+A more meaningful analysis would be to run *moran.test* for each of the covariates under consideration, the results of which are shown below.
+
+```{r moran_mat}
 moran.vec <- c("Population density", moran.test.sum(toDAs.NAomit$population_density),
                "Median household income", moran.test.sum(toDAs.NAomit$median_hh_income),
                "Median age", moran.test.sum(toDAs.NAomit$median_age),
@@ -336,13 +356,21 @@ moran.vec <- c("Population density", moran.test.sum(toDAs.NAomit$population_dens
 
 moran.mat <- matrix(moran.vec, ncol = 3, byrow = TRUE)
 
-colnames(moran.mat) <- c("Variable", "Moran's Statistic (I)", "p-value")
+colnames(moran.mat) <- c("Variable", "Moran_I", "p_value")
 
-kable(moran.mat)
+moran.df <- data.frame(moran.mat)
+print(moran.df)
 ```
 
+Each covariate has a significantly low p-value, meaning that they all exhibit significant spatial autocorrelation.
 
-```{r}
+While these exploratory analyses do not directly relate to the principal research question, they do provide valuable insight into the behaviour of these covariates over the study area, and may indicate avenues for further research into the underlying processes that affect their distribution.
+
+## Linear regression analyses
+
+Linear regression is a powerful data analysis technique that estimates a model of a stochastic process. It posits linear relationships between a dependent variable (in this case, PM 2.5), and one or more covariates. Conducting linear regression between the PM 2.5 value and each covariate served as a means of estimating the strength of the relationship between the two variables and, therefore, providing insight into which variables have the most effect on particulate air pollution. The function *lm* was used to carry out this analysis, and the results are shown in the following figures.
+
+```{r lr_func}
 
 # Linear regression function
 # Ask for variable
@@ -367,7 +395,7 @@ linreg <- function(var, name){
 }
 ```
 
-```{r}
+```{r lr_calls}
 Pop_den.lm <- linreg(toDAs.NAomit$population_density, "Population density")
 med_inc.lm <- linreg(toDAs.NAomit$median_hh_income, "Median household income")
 med_age.lm <- linreg(toDAs.NAomit$median_age, "Median Age")
@@ -377,18 +405,27 @@ walking.lm <- linreg(toDAs.NAomit$walking/toDAs.NAomit$pop21, "Proportion commut
 cycling.lm <- linreg(toDAs.NAomit$cycling/toDAs.NAomit$pop21, "Proportion commuting via cycling")
 minority.lm <- linreg(toDAs.NAomit$minority_population/toDAs.NAomit$pop21, "Proportion of visible  minorities")
 dwellings.lm <- linreg(toDAs.NAomit$dwellings/toDAs.NAomit$`Area (sq km)`, "Dwellings density")
-bachelors.lm <- linreg(toDAs.NAomit$bachelors/toDAs.NAomit$pop21, "Proportion with at least a bachelor's")
 ```
 
-```{r}
-(Pop_den.lm | med_inc.lm) /
-  (med_age.lm | minority.lm)
-
-(automobile.lm | public_transit.lm) /
-(walking.lm | cycling.lm )
+```{r lr_plots_demographic, fig.cap={"\\label{fig:lr_plots}Scatterplots of each socio-economic covariate vs PM 2.5, along with a trend line and adjusted R-squared value based on coefficients estimated from linear regression"}}
+grid.arrange(Pop_den.lm, med_inc.lm, med_age.lm, minority.lm, nrow = 2)
 ```
 
-```{r}
+
+```{r lr_plots_commute, fig.cap={"\\label{fig:lr_plots_commute}Scatterplots of each commuting-related covariate vs PM 2.5, along with a trend line and adjusted R-squared value based on coefficients estimated from linear regression"}}
+
+grid.arrange(automobile.lm, public_transit.lm, walking.lm, cycling.lm, nrow = 2)
+```
+
+
+Particulate matter levels were regressed against several socio-economic factors. A positive relationship is seen between PM 2.5 and the covariates median age, proportion of visible minorities, and proportion commuting via automobile. As was seen above from the chloropleth maps, areas with high minority populations tend to align with those of lower income. The regression analysis suggests that visible minorities may live closer to polluting areas of the city, a pattern that reflects socioeconomic disadvantages that visible minority groups disproportionately face. Additionally, the findings suggest that increased usage of automobiles is a contributing factor to particulate air pollution. The positive relationship between PM 2.5 and age also suggests that elderly populations are increasingly subject to pollutants. 
+
+On the other hand, a negative relationship is observed between PM 2.5 and proportions commuting via walking and cycling. This indicates that, with increased walking and cycling, other factors that contribute to pollution are diminished, due to these methods of commuting being ones that do not release emissions.
+
+The graphs also display the adjusted R-squared value for each model. This statistic provides a measure of the amount of variability in the data accounted for by the model, with higher values indicating a better fit. For the five variables mentioned above which seem to display significant relationships with PM 2.5, the adjusted R-squared values are relatively higher than those of the other covariates. Although the trendline for the population density graph seems to indicate a negative relationship, its low adjusted R-squared value also suggests that the model is not a good estimator of the underlying process. 
+
+
+```{r new_cols}
 toDAs.NAomit$minority_proportion <- toDAs.NAomit$minority_population/toDAs.NAomit$pop21
 toDAs.NAomit$automobile_prop <- toDAs.NAomit$automobile/toDAs.NAomit$pop21
 toDAs.NAomit$public_tr_prop <- toDAs.NAomit$public_transit/toDAs.NAomit$pop21
@@ -396,9 +433,9 @@ toDAs.NAomit$walking_prop <- toDAs.NAomit$walking/toDAs.NAomit$pop21
 toDAs.NAomit$cycling_prop <- toDAs.NAomit$cycling/toDAs.NAomit$pop21
 ```
 
-To further investigate the relative importance of each covariate, linear regression was performed using all eight covariates. It is also possible that this might result in a better fit than models involving only single covariates.
+To further investigate the relative strength of each's covariate's effect on PM 2.5, and their relative importance in predicting it, a linear regression model was created using all eight covariates. It was considered that this might result in a better fit than models involving only a single covariate, due to particulate matter levels being dependent on multiple factors. A summary of the regression analysis is shown below:
 
-```{r}
+```{r lm_call}
 lm.all_vars <- lm(formula = P ~ population_density + 
                     minority_proportion + 
                     median_age +
@@ -410,11 +447,15 @@ lm.all_vars <- lm(formula = P ~ population_density +
                   data = toDAs.NAomit)
 ```
 
-```{r}
+```{r lm_summary}
 summary(lm.all_vars)
 ```
 
-```{r}
+It can be seen that the adjusted R-squared value is higher than those for the individual covariate models, indicating that a model that makes use of multiple covariates provides a better fit. Examining the p-values of the coefficients of each covariate allows it to be determined whether the covariate affects the dependent variable significantly (that is, whether the coefficient is significantly different from 0). It can be seen that the covariates with the lowest p-values are the same five ones identified earlier: median age, proportion of visible minorities, and proportions commuting via automobile, walking and cycling. 
+
+In an attempt to improve the model, linear regression analysis was conducted again, using only these five covariates. A summary of the results is shown below:
+
+```{r best_preds}
 # finding best predictors
 
 lm.best_vars <- lm(formula = P ~ minority_proportion + 
@@ -426,28 +467,36 @@ lm.best_vars <- lm(formula = P ~ minority_proportion +
 
 summary(lm.best_vars)
 ```
-Despite using only the covariates with the lowest p-value, the Adjusted R-squared value decreases slightly and the residual standard error increases. This indicates that reducing the number of variables in the model does not in fact improve the fit. Therefore, for general prediction it might be best to use all 8 of the selected variables. 
 
-```{r}
+Despite using only the covariates with the lowest p-value, the adjusted R-squared value decreased slightly and the residual standard error increased, compared to the model using all covariates. This indicates that reducing the number of variables in the model does not in fact improve the fit. Therefore, for general prediction it might be best to use all 8 of the selected variables. 
+
+In order to determine whether this model captures all the underlying systematic spatial variation, the spatial autocorrelation of the model's residuals was examined as a diagnostic.
+
+```{r res_plot, fig.cap={"\\label{fig:res_plot}Sign of the model's residuals, indicating whether the model systematically over or under estimates the dependent variable in certain locations"}}
 toDAs.res <- mutate(toDAs.NAomit, "res" = lm.all_vars$residuals)
-toDAs.res.sign <- toDAs.res$res > 0 
+toDAs.res.sign <- ifelse(toDAs.res$res > 0, "Positive", "Negative")
 
-ggplot(toDAs.res) + geom_sf(aes(fill = toDAs.res.sign))
+ggplot(toDAs.res) + geom_sf(aes(fill = toDAs.res.sign)) + labs(fill = "Residual sign")
+```
+```{r}
+res.moran <- moran.test(toDAs.res$res, torontoDAsna.w)
+#res.moran
 ```
 
+As can be seen from the plot, the model's residuals seem to be spatially autocorrelated. To further confirm this result, *moran.test* was run on the residuals, resulting in a significantly small p-value. This indicates a violation of the model's assumption of residual independence, and implies that there are other underlying processes behind the distribution of particulate matter levels that it does not account for. Further research could be conducted to remedy this, such as transforming the variables or using different methods such as trend surface analysis to conduct the analysis. Additionally, there may be other variables, socio-economic or not, which have an effect on PM 2.5 levels, and these could be investigated. 
 
+# Conclusion and Recommendations
 
-Words
+Overall, particulate air pollution levels and socioeconomic factors are found to be spatially autocorrelated. Positive relationships have been found between PM 2.5 and proportions of populations who commute via automobile, as well as between PM 2.5 and the median population age and the proportion of visible minorities. Negative relationships were found between PM 2.5 vs and proportions who commute via walking and cycling. These findings offer insight into demographic groups that might be disproportionately affected by air pollution. In addition, they reiterate the detrimental effect that automobile use has on air quality, and, consequently, the benefits to utilizing non-emitting methods of transportation. 
 
-# Methods
+As a result of these findings, it is recommended that the City of Toronto implements programs to encourage walking and cycling to reduce car use. To achieve this, future civil engineering should focus on being increasingly pedestrian-friendly, through means such as including more walkways and bike paths. Additionally, strategies should be developed to reduce the levels of pollutants that elderly residents and minorities are subject to, as it presents a clear health risk that could also have financial consequences. 
 
-Describing some methods.
+Some recommendations for further studies are to improve the interpolation by including more data points which are evenly distributed across Toronto. More data points in areas of Toronto outside the downtown area, specifically on the north and east end, will be beneficial given that the focus of analysis is on the entire region of Toronto. For example, it could support a stronger variogram analysis with a better fitting semivariogram curve. Such an analysis could support a kriging analysis that provides a more reliable interpolation of air pollution across the city by minimizing standard error, variance, and capturing residual information. 
 
-# Results and discussion
+Another recommendation would be to increase the time span the analysis is done on. By covering a greater time period, we can ensure the accuracy of results by accounting for variations in pollution not visible on a two-week approximate scale. These variations may result from fluctuations in polluting activities across time periods, seasonal changes, or other human/environmental factors. 
 
-<!-- I think it would be a good idea to have a section with the discussion of the findings -->
+Since the linear regression model generated in this project was shown to have spatially autocorrelated residuals, further research can be done into improving the model. This might involve further examination of the covariates and other diagnostics, as well as the inclusion of additional factors that might also play a role in particulate pollution.
 
-Here we will discuss the results of the analysis.
 
 # References
 
