@@ -143,31 +143,6 @@
       ],
       "Hash": "4f57884290cc75ab22f4af9e9d4ca862"
     },
-    "arcos": {
-      "Package": "arcos",
-      "Version": "1.29",
-      "Source": "GitHub",
-      "RemoteType": "github",
-      "RemoteHost": "api.github.com",
-      "RemoteRepo": "arcos",
-      "RemoteUsername": "wpinvestigative",
-      "RemoteRef": "HEAD",
-      "RemoteSha": "bc51c6ba89cb26fcb12f3f9a63151e1f25642e35",
-      "Requirements": [
-        "R",
-        "curl",
-        "dplyr",
-        "httr",
-        "jsonlite",
-        "magrittr",
-        "stringr",
-        "tidyr",
-        "urltools",
-        "vroom",
-        "zoo"
-      ],
-      "Hash": "a672dff3a0fb0202afcbec0f6f1a6034"
-    },
     "askpass": {
       "Package": "askpass",
       "Version": "1.2.0",
@@ -327,18 +302,6 @@
         "rlang"
       ],
       "Hash": "e742655d7786e3c003c5925f6cb1d88f"
-    },
-    "cartogram": {
-      "Package": "cartogram",
-      "Version": "0.3.0",
-      "Source": "Repository",
-      "Repository": "RSPM",
-      "Requirements": [
-        "methods",
-        "packcircles",
-        "sf"
-      ],
-      "Hash": "6b90d0ec2166dcec1db87a78431eab25"
     },
     "cellranger": {
       "Package": "cellranger",
@@ -1378,17 +1341,6 @@
       ],
       "Hash": "2a0dc8c6adfb6f032e4d4af82d258ab5"
     },
-    "packcircles": {
-      "Package": "packcircles",
-      "Version": "0.3.6",
-      "Source": "Repository",
-      "Repository": "RSPM",
-      "Requirements": [
-        "R",
-        "Rcpp"
-      ],
-      "Hash": "200e0502e07847f9e6306287fea23961"
-    },
     "patchwork": {
       "Package": "patchwork",
       "Version": "1.2.0",
@@ -2168,17 +2120,6 @@
       ],
       "Hash": "787fa89f5c48dfe579c670db3ceaa0cc"
     },
-    "stargazer": {
-      "Package": "stargazer",
-      "Version": "5.2.3",
-      "Source": "Repository",
-      "Repository": "RSPM",
-      "Requirements": [
-        "stats",
-        "utils"
-      ],
-      "Hash": "d313fa83180f3376229f98633813cd31"
-    },
     "stars": {
       "Package": "stars",
       "Version": "0.6-5",
@@ -2373,25 +2314,6 @@
       ],
       "Hash": "c328568cd14ea89a83bd4ca7f54ae07e"
     },
-    "tigris": {
-      "Package": "tigris",
-      "Version": "2.1",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R",
-        "dplyr",
-        "httr",
-        "magrittr",
-        "methods",
-        "rappdirs",
-        "sf",
-        "stringr",
-        "utils",
-        "uuid"
-      ],
-      "Hash": "d750d0f06536d915f01d433254451204"
-    },
     "timechange": {
       "Package": "timechange",
       "Version": "0.3.0",
@@ -2412,16 +2334,6 @@
         "xfun"
       ],
       "Hash": "be7a76845222ad20adb761f462eed3ea"
-    },
-    "triebeard": {
-      "Package": "triebeard",
-      "Version": "0.4.1",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "Rcpp"
-      ],
-      "Hash": "642507a148b0dd9b5620177e0a044413"
     },
     "tzdb": {
       "Package": "tzdb",
@@ -2444,19 +2356,6 @@
         "Rcpp"
       ],
       "Hash": "119d19da480e873f72241ff6962ffd83"
-    },
-    "urltools": {
-      "Package": "urltools",
-      "Version": "1.7.3",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R",
-        "Rcpp",
-        "methods",
-        "triebeard"
-      ],
-      "Hash": "e86a704261a105f4703f653e05defa3e"
     },
     "utf8": {
       "Package": "utf8",
@@ -2491,19 +2390,6 @@
         "rlang"
       ],
       "Hash": "c03fa420630029418f7e6da3667aac4a"
-    },
-    "viridis": {
-      "Package": "viridis",
-      "Version": "0.6.5",
-      "Source": "Repository",
-      "Repository": "RSPM",
-      "Requirements": [
-        "R",
-        "ggplot2",
-        "gridExtra",
-        "viridisLite"
-      ],
-      "Hash": "acd96d9fa70adeea4a5a1150609b9745"
     },
     "viridisLite": {
       "Package": "viridisLite",
